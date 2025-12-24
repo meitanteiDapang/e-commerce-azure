@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import dapang1 from './assets/dapang1.jpg'
 import dapang2 from './assets/dapang2.jpg'
 import dapang3 from './assets/dapang3.jpg'
@@ -12,6 +13,61 @@ const gallery = [
 ]
 
 function App() {
+  const [apiInfo, setApiInfo] = useState({ loading: true, data: null, error: null })
+  const [dataTest, setDataTest] = useState({ loading: true, data: [], error: null })
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const fetchInfo = async () => {
+      try {
+        const res = await fetch('/api/info', { signal: controller.signal })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        setApiInfo({ loading: false, data, error: null })
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        setApiInfo({ loading: false, data: null, error: err })
+      }
+    }
+
+    fetchInfo()
+
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/datatest', { signal: controller.signal })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        setDataTest({ loading: false, data, error: null })
+      } catch (err) {
+        if (err.name === 'AbortError') return
+        setDataTest({ loading: false, data: [], error: err })
+      }
+    }
+
+    fetchData()
+
+    return () => controller.abort()
+  }, [])
+
+  const statusText = (() => {
+    if (apiInfo.loading) return 'Checking connection...'
+    if (apiInfo.error) return 'API unreachable'
+    return 'API online'
+  })()
+
+  const versionText = (() => {
+    if (apiInfo.loading) return 'Fetching version...'
+    if (apiInfo.error) return apiInfo.error.message
+    return `Version ${apiInfo.data?.version ?? 'unknown'}`
+  })()
+
   return (
     <div className="page bright">
       <div className="glow glow-one" />
@@ -23,6 +79,29 @@ function App() {
           <div className="nav-actions">
             <span className="pill loud">Dapang is a cat. The motel is his.</span>
             <span className="pill">Check-in 24/7 · Ocean breeze</span>
+          </div>
+        </div>
+
+        <div className="status-card">
+          <div className="status-left">
+            <span
+              className={`status-dot ${
+                apiInfo.loading ? 'status-dot-pending' : apiInfo.error ? 'status-dot-error' : 'status-dot-ok'
+              }`}
+            />
+            <div>
+              <p className="label">api/info</p>
+              <p className="value">{statusText}</p>
+            </div>
+          </div>
+          <div className="status-right">
+            <p className="eyebrow">Service</p>
+            <p className="value">
+              {apiInfo.loading && 'Loading...'}
+              {apiInfo.error && 'Unknown'}
+              {!apiInfo.loading && !apiInfo.error && apiInfo.data?.service}
+            </p>
+            <p className="subtext">{versionText}</p>
           </div>
         </div>
 
@@ -95,6 +174,47 @@ function App() {
               <p>{item.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="section data-section">
+        <div className="section-header">
+          <p className="eyebrow">API data</p>
+          <h2>Seeded users served from /api/datatest</h2>
+          <p className="subtext">
+            Pulled straight from Postgres via the new API route—handy for smoke tests and
+            connectivity checks.
+          </p>
+        </div>
+
+        <div className="data-card">
+          {dataTest.loading && <p className="subtext">Loading seeded users...</p>}
+          {dataTest.error && (
+            <p className="subtext error-text">Failed to load users: {dataTest.error.message}</p>
+          )}
+          {!dataTest.loading && !dataTest.error && (
+            <div className="data-list">
+              <div className="data-row data-head">
+                <span>ID</span>
+                <span>Name</span>
+                <span>Email</span>
+              </div>
+              {dataTest.data.length === 0 && (
+                <div className="data-row">
+                  <span>—</span>
+                  <span>No users found</span>
+                  <span>—</span>
+                </div>
+              )}
+              {dataTest.data.map((user) => (
+                <div className="data-row" key={user.id}>
+                  <span>{user.id}</span>
+                  <span>{user.name}</span>
+                  <span>{user.email}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

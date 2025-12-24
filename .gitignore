@@ -51,3 +51,6 @@ dist/
 .vite/
 *.local
 *.log
+
+# backups
+backups/

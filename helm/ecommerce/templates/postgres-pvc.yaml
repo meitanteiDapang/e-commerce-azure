@@ -1,0 +1,16 @@
+{{- if .Values.postgres.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-postgres-pvc
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage.size | default "1Gi" }}
+  {{- if .Values.postgres.storage.className }}
+  storageClassName: {{ .Values.postgres.storage.className | quote }}
+  {{- end }}
+{{- end }}

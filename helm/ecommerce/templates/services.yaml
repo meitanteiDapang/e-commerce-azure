@@ -24,3 +24,17 @@ spec:
     - name: http
       port: {{ .Values.api.servicePort }}
       targetPort: {{ .Values.api.containerPort | default 8080 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-postgres
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.postgres.port | default 5432 }}
+      targetPort: {{ .Values.postgres.port | default 5432 }}

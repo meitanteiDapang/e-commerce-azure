@@ -1,8 +1,20 @@
-ingress:
-  enabled: true
-
 web:
   servicePort: 80
 
 api:
   servicePort: 80
+
+certManager:
+  enabled: true
+  clusterIssuerName: letsencrypt-prod
+  email: zhonghaoyang629@gmail.com
+  server: https://acme-v02.api.letsencrypt.org/directory
+  privateKeySecretName: letsencrypt-prod-account-key
+
+ingress:
+  enabled: true
+  className: nginx
+  host: dapang.live
+  tls:
+    enabled: true
+    secretName: dapang-live-tls

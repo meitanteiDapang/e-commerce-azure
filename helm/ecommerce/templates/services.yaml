@@ -23,4 +23,4 @@ spec:
   ports:
     - name: http
       port: {{ .Values.api.servicePort }}
-      targetPort: 5678
+      targetPort: {{ .Values.api.containerPort | default 8080 }}

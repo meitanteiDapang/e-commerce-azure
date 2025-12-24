@@ -16,6 +16,7 @@ spec:
       containers:
         - name: web
           image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 80
 
@@ -37,8 +38,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: hashicorp/http-echo:1.0
-          args:
-            - "-text=hello from api"
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy | default "IfNotPresent" }}
           ports:
-            - containerPort: 5678
+            - containerPort: {{ .Values.api.containerPort | default 8080 }}

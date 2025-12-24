@@ -3,10 +3,16 @@ web:
   image:
     repository: acrecommercedev629.azurecr.io/web
     tag: dev-latest
+    pullPolicy: IfNotPresent
 
 
 api:
   servicePort: 80
+  containerPort: 8080
+  image:
+    repository: acrecommercedev629.azurecr.io/api
+    tag: dev-latest
+    pullPolicy: IfNotPresent
 
 certManager:
   enabled: true

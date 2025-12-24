@@ -8,15 +8,18 @@ CHART_PATH="${CHART_PATH:-./helm/ecommerce}"
 
 # default tag: dev-<short git sha>
 IMAGE_TAG="${IMAGE_TAG:-dev-$(git rev-parse --short HEAD)}"
+API_IMAGE_TAG="${API_IMAGE_TAG:-$IMAGE_TAG}"
 
 echo "NAMESPACE=$NAMESPACE"
 echo "RELEASE=$RELEASE"
 echo "CHART_PATH=$CHART_PATH"
 echo "IMAGE_TAG=$IMAGE_TAG"
+echo "API_IMAGE_TAG=$API_IMAGE_TAG"
 
 helm upgrade --install "$RELEASE" "$CHART_PATH" \
   --namespace "$NAMESPACE" \
   --create-namespace \
-  --set "web.image.tag=$IMAGE_TAG"
+  --set "web.image.tag=$IMAGE_TAG" \
+  --set "api.image.tag=$API_IMAGE_TAG"
 
-echo "DONE: helm deployed $RELEASE to namespace $NAMESPACE with web.image.tag=$IMAGE_TAG"
+echo "DONE: helm deployed $RELEASE to namespace $NAMESPACE with web.image.tag=$IMAGE_TAG api.image.tag=$API_IMAGE_TAG"

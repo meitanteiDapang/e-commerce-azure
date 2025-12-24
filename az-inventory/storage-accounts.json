@@ -1,0 +1,101 @@
+[
+  {
+    "accessTier": "Hot",
+    "accountMigrationInProgress": null,
+    "allowBlobPublicAccess": true,
+    "allowCrossTenantReplication": false,
+    "allowSharedKeyAccess": null,
+    "allowedCopyScope": null,
+    "azureFilesIdentityBasedAuthentication": null,
+    "blobRestoreStatus": null,
+    "creationTime": "2025-12-24T23:18:02.519093+00:00",
+    "customDomain": null,
+    "defaultToOAuthAuthentication": null,
+    "dnsEndpointType": null,
+    "dualStackEndpointPreference": null,
+    "enableExtendedGroups": null,
+    "enableHttpsTrafficOnly": true,
+    "enableNfsV3": null,
+    "encryption": {
+      "encryptionIdentity": null,
+      "keySource": "Microsoft.Storage",
+      "keyVaultProperties": null,
+      "requireInfrastructureEncryption": null,
+      "services": {
+        "blob": {
+          "enabled": true,
+          "keyType": "Account",
+          "lastEnabledTime": "2025-12-24T23:18:02.706452+00:00"
+        },
+        "file": {
+          "enabled": true,
+          "keyType": "Account",
+          "lastEnabledTime": "2025-12-24T23:18:02.706452+00:00"
+        },
+        "queue": null,
+        "table": null
+      }
+    },
+    "extendedLocation": null,
+    "failoverInProgress": null,
+    "geoPriorityReplicationStatus": null,
+    "geoReplicationStats": null,
+    "id": "/subscriptions/cc332703-50a3-4b74-996c-0b3dbe031910/resourceGroups/rg-ecommerce-dev/providers/Microsoft.Storage/storageAccounts/storageecommerce629",
+    "identity": null,
+    "immutableStorageWithVersioning": null,
+    "isHnsEnabled": null,
+    "isLocalUserEnabled": null,
+    "isSftpEnabled": null,
+    "isSkuConversionBlocked": null,
+    "keyCreationTime": {
+      "key1": "2025-12-24T23:18:02.690888+00:00",
+      "key2": "2025-12-24T23:18:02.690888+00:00"
+    },
+    "keyPolicy": null,
+    "kind": "StorageV2",
+    "largeFileSharesState": null,
+    "lastGeoFailoverTime": null,
+    "location": "australiaeast",
+    "minimumTlsVersion": "TLS1_0",
+    "name": "storageecommerce629",
+    "networkRuleSet": {
+      "bypass": "AzureServices",
+      "defaultAction": "Allow",
+      "ipRules": [],
+      "ipv6Rules": [],
+      "resourceAccessRules": null,
+      "virtualNetworkRules": []
+    },
+    "placement": null,
+    "primaryEndpoints": {
+      "blob": "https://storageecommerce629.blob.core.windows.net/",
+      "dfs": "https://storageecommerce629.dfs.core.windows.net/",
+      "file": "https://storageecommerce629.file.core.windows.net/",
+      "internetEndpoints": null,
+      "ipv6Endpoints": null,
+      "microsoftEndpoints": null,
+      "queue": "https://storageecommerce629.queue.core.windows.net/",
+      "table": "https://storageecommerce629.table.core.windows.net/",
+      "web": "https://storageecommerce629.z8.web.core.windows.net/"
+    },
+    "primaryLocation": "australiaeast",
+    "privateEndpointConnections": [],
+    "provisioningState": "Succeeded",
+    "publicNetworkAccess": null,
+    "resourceGroup": "rg-ecommerce-dev",
+    "routingPreference": null,
+    "sasPolicy": null,
+    "secondaryEndpoints": null,
+    "secondaryLocation": null,
+    "sku": {
+      "name": "Standard_LRS",
+      "tier": "Standard"
+    },
+    "statusOfPrimary": "available",
+    "statusOfSecondary": null,
+    "storageAccountSkuConversionStatus": null,
+    "tags": {},
+    "type": "Microsoft.Storage/storageAccounts",
+    "zones": null
+  }
+]

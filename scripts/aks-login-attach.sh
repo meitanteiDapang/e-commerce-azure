@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Config (override via env)
-RG="${RG:-rg-ecommerce-dev}"
-AKS="${AKS:-aks-ecommerce-dev}"
-ACR_NAME="${ACR_NAME:-acrecommercedev629}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../setup.sh
+source "$ROOT_DIR/setup.sh"
 
 echo "RG=$RG"
 echo "AKS=$AKS"

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "/subscriptions/cc332703-50a3-4b74-996c-0b3dbe031910/resourceGroups/rg-ecommerce-dev",
+    "location": "australiaeast",
+    "managedBy": null,
+    "name": "rg-ecommerce-dev",
+    "properties": {
+      "provisioningState": "Succeeded"
+    },
+    "tags": null,
+    "type": "Microsoft.Resources/resourceGroups"
+  },
+  {
+    "id": "/subscriptions/cc332703-50a3-4b74-996c-0b3dbe031910/resourceGroups/MC_rg-ecommerce-dev_aks-ecommerce-dev_australiaeast",
+    "location": "australiaeast",
+    "managedBy": "/subscriptions/cc332703-50a3-4b74-996c-0b3dbe031910/resourcegroups/rg-ecommerce-dev/providers/Microsoft.ContainerService/managedClusters/aks-ecommerce-dev",
+    "name": "MC_rg-ecommerce-dev_aks-ecommerce-dev_australiaeast",
+    "properties": {
+      "provisioningState": "Succeeded"
+    },
+    "tags": {
+      "aks-managed-cluster-name": "aks-ecommerce-dev",
+      "aks-managed-cluster-rg": "rg-ecommerce-dev"
+    },
+    "type": "Microsoft.Resources/resourceGroups"
+  },
+  {
+    "id": "/subscriptions/cc332703-50a3-4b74-996c-0b3dbe031910/resourceGroups/NetworkWatcherRG",
+    "location": "australiaeast",
+    "managedBy": null,
+    "name": "NetworkWatcherRG",
+    "properties": {
+      "provisioningState": "Succeeded"
+    },
+    "tags": null,
+    "type": "Microsoft.Resources/resourceGroups"
+  }
+]

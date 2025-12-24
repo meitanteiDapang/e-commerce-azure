@@ -1,0 +1,5 @@
+Name                                                 Location       Status
+---------------------------------------------------  -------------  ---------
+rg-ecommerce-dev                                     australiaeast  Succeeded
+MC_rg-ecommerce-dev_aks-ecommerce-dev_australiaeast  australiaeast  Succeeded
+NetworkWatcherRG                                     australiaeast  Succeeded

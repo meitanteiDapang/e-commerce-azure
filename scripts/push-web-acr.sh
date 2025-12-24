@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ACR_NAME="${ACR_NAME:-acrecommercedev629}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=../setup.sh
+source "$ROOT_DIR/setup.sh"
+
 IMAGE_NAME="${IMAGE_NAME:-web}"
 TAG="${TAG:-dev-$(git rev-parse --short HEAD)}"
 

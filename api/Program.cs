@@ -19,10 +19,8 @@ var connectionString =
 
 var dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
 
-// Support both /api/* and root /health|/info for ingress rewrite convenience
-
+// API routes
 app.MapGet("/api/health", () => Results.Ok(HealthPayload()));
-
 app.MapGet("/api/info", () => Results.Ok(InfoPayload()));
 
 // Support both /api/* and root path to handle ingress rewrite differences
@@ -46,7 +44,6 @@ async Task<IResult> GetUsers()
 }
 
 app.MapGet("/api/datatest", GetUsers);
-app.MapGet("/datatest", GetUsers);
 
 app.MapGet("/", () => Results.Redirect("/api/health"));
 

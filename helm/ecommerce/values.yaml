@@ -1,0 +1,8 @@
+ingress:
+  enabled: true
+
+web:
+  servicePort: 80
+
+api:
+  servicePort: 80

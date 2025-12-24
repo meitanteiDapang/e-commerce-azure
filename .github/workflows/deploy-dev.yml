@@ -1,0 +1,53 @@
+name: Deploy to AKS (dev)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "helm/**"
+      - ".github/workflows/deploy-dev.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RG: rg-ecommerce-dev
+  AKS: aks-ecommerce-dev
+  NAMESPACE: ecommerce
+  RELEASE: ecommerce
+  CHART_PATH: ./helm/ecommerce
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ env.RG }}
+          cluster-name: ${{ env.AKS }}
+
+      - name: Helm upgrade/install
+        run: |
+          helm version
+          helm upgrade --install $RELEASE $CHART_PATH \
+            --namespace $NAMESPACE \
+            --create-namespace
+
+      - name: Show status
+        run: |
+          kubectl get pods -n $NAMESPACE
+          kubectl get svc -n $NAMESPACE
+          kubectl get ingress -n $NAMESPACE

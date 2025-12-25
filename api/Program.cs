@@ -16,7 +16,7 @@ var app = builder.Build();
 
 app.MapHealthEndpoints();
 app.MapInfoEndpoints();
-app.MapDataTestEndpoints();
+app.MapRoomTypeEndpoints();
 
 app.MapGet("/", () => Results.Redirect("/api/health"));
 

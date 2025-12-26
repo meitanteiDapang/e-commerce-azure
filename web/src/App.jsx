@@ -75,7 +75,10 @@ function App() {
     const controller = new AbortController();
     const fetchTest = async () => {
       try {
-        const res = await fetch("/api/test", { signal: controller.signal });
+        const url = new URL("/api/test", window.location.origin);
+        url.searchParams.set("test_id", 123);
+
+        const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setTestProbe({ loading: false, data, error: null });

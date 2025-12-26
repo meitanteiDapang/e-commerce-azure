@@ -11,7 +11,10 @@ public static class RoomTypeEndpoints
         return endpoints;
     }
 
-    private static async Task<IResult> GetRoomTypes(NpgsqlDataSource dataSource, CancellationToken cancellationToken)
+    private static async Task<IResult> GetRoomTypes(
+        NpgsqlDataSource dataSource,
+        CancellationToken cancellationToken
+    )
     {
         await using var conn = await dataSource.OpenConnectionAsync(cancellationToken);
         await using var cmd = new NpgsqlCommand(

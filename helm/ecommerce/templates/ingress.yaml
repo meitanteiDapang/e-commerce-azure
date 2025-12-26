@@ -14,6 +14,9 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.host | quote }}
+        {{- if .Values.ingress.apiHost }}
+        - {{ .Values.ingress.apiHost | quote }}
+        {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | quote }}
   {{- end }}
   rules:
@@ -34,6 +37,18 @@ spec:
             backend:
               service:
                 name: {{ .Release.Name }}-web
+                port:
+                  number: 80
+    {{- end }}
+    {{- if .Values.ingress.apiHost }}
+    - host: {{ .Values.ingress.apiHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-api
                 port:
                   number: 80
     {{- end }}

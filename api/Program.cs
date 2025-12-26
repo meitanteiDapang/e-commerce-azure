@@ -14,7 +14,29 @@ var connectionString =
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+var allowedOrigins = (builder.Configuration["AllowedOrigins"]
+        ?? builder.Configuration["ALLOWED_ORIGINS"])
+    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    ?? new[]
+    {
+        "https://dapang.live",
+        "https://www.dapang.live",
+        "http://localhost:5173",
+    };
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors();
 
 app.MapHealthEndpoints();
 app.MapInfoEndpoints();

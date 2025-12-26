@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import BookingPage from "./booking/BookingPage.jsx";
 import BookingSuccessPage from "./booking/BookingSuccessPage.jsx";
 import "./App.css";
+import { apiUrl } from "./apiClient.js";
 
 const parseRoute = () => {
   // Normalize hash so both "#booked" and "#/booked" work
@@ -48,7 +49,7 @@ function App() {
 
     const fetchRoomTypes = async () => {
       try {
-        const res = await fetch("/api/room-types", {
+        const res = await fetch(apiUrl("/room-types"), {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -75,7 +76,7 @@ function App() {
     const controller = new AbortController();
     const fetchTest = async () => {
       try {
-        const url = new URL("/api/test", window.location.origin);
+        const url = new URL(apiUrl("/test"), window.location.origin);
         url.searchParams.set("test_id", 123);
 
         const res = await fetch(url, { signal: controller.signal });
@@ -161,7 +162,7 @@ function App() {
             </div>
             <div className="test-result">
               {testProbe.loading && (
-                <span className="pill">Contacting /api/test ...</span>
+                <span className="pill">Contacting API...</span>
               )}
               {testProbe.error && (
                 <span className="pill error-pill">

@@ -45,6 +45,10 @@ spec:
           env:
             - name: POSTGRES_CONNECTION
               value: "Host={{ .Release.Name }}-postgres;Port={{ .Values.postgres.port | default 5432 }};Username={{ .Values.postgres.username }};Password={{ .Values.postgres.password }};Database={{ .Values.postgres.database }}"
+            {{- if .Values.api.allowedOrigins }}
+            - name: ALLOWED_ORIGINS
+              value: "{{ join \",\" .Values.api.allowedOrigins }}"
+            {{- end }}
 
 ---
 apiVersion: apps/v1

@@ -13,6 +13,10 @@ api:
     repository: acrecommercedev629.azurecr.io/api
     tag: dev-latest
     pullPolicy: IfNotPresent
+  allowedOrigins:
+    - https://dapang.live
+    - https://www.dapang.live
+    - http://localhost:5173
 
 postgres:
   image:
@@ -39,6 +43,7 @@ ingress:
   enabled: true
   className: nginx
   host: dapang.live
+  apiHost: api.dapang.live
   tls:
     enabled: true
     secretName: dapang-live-tls

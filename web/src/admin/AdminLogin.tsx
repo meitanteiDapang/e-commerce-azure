@@ -6,12 +6,19 @@ const AdminLogin = () => {
   const navigate = useNavigate()
   const [username, setUsername] = useState<string>('admin')
   const [password, setPassword] = useState<string>('ps^word')
+  const [errorText, setErrorText] = useState<string>('')
+
   const adminLogin = useAdminLogin(username, password)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await adminLogin.submit()
-    navigate('/admin')
+    const res = await adminLogin.submit()
+    if (res.success) {
+      navigate('/admin')
+    } else {
+      setErrorText(res.message ?? 'Unknown error')
+    }
+    
   }
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +45,11 @@ const AdminLogin = () => {
             <p className="subtext">
               Enter your credentials to reach the admin console.
             </p>
+            {errorText && (
+              <p className="subtext" style={{ color: 'red' }}>
+                {errorText}
+              </p>
+            )}
           </div>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">

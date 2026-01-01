@@ -8,7 +8,7 @@ const AdminEntryButton = () => {
       className="admin-link"
       type="button"
       onClick={() => {
-        navigate("/adminlogin");
+        navigate("/login");
       }}
     >
       Admin entry

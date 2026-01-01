@@ -110,7 +110,10 @@ function App() {
           />
         }
       />
-      <Route path="/adminlogin" element={<AdminLogin />} />
+      <Route
+        path="/login"
+        element={<AdminLogin />}
+      />
       <Route
         path="/admin"
         element={<AdminPage />}

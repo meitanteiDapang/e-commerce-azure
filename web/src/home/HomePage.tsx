@@ -17,7 +17,7 @@ const HomePage = () => {
 
   const handleAdminEntry = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault()
-    navigate('/login')
+    navigate('/adminLogin')
   }
 
   return (

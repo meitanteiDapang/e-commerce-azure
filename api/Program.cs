@@ -99,7 +99,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
+app.MapCheckAdminTokenEndpoints();
 app.MapAdminLoginEndpoints();
 app.MapLoadBookingsEndpoints();
 app.MapHealthEndpoints();

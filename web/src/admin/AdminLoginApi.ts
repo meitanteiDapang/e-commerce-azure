@@ -20,3 +20,19 @@ export const requestAdminLogin = async (username: string, password: string): Pro
   const message = (data as { message?: string } | null)?.message || `Admin login failed (HTTP ${res.status})`
   throw new Error(message)
 }
+
+
+export const requestCheckAdminToken = async (token: string): Promise<unknown> => {
+  const res = await fetch(apiUrl('/admin/checkAdminToken'), {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const httpStatus = res.status
+  if (!res.ok) {
+    throw new Error(`Admin token check failed (HTTP ${httpStatus})`)
+  }
+  return res.json()
+}

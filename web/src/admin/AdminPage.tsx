@@ -23,8 +23,7 @@ const AdminPage = () => {
 
   useEffect(()=>{
     if (!token) {
-      console.log("no token!")
-      return
+      navigate("/adminLogin")
     }
 
     let isActive = true

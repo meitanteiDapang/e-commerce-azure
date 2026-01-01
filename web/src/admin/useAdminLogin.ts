@@ -1,4 +1,4 @@
-import { requestAdminLogin } from './AdminLoginApi'
+import { requestAdminLogin, requestCheckAdminToken } from './AdminLoginApi'
 
 interface adminLoginResponse {
   success: boolean,
@@ -6,11 +6,18 @@ interface adminLoginResponse {
   token?: string
 }
 
+interface checkAdminToeknResponse {
+  status: boolean,
+  message?: string
+}
+
+
 const isAdminLoginResponse = (value: unknown): value is { message?: string, token?: string } => {
   return typeof value === 'object' && value !== null
 }
 
 interface UseAdminLoginResult {
+  checkAdminToken: (token: string) => Promise<boolean>,
   submit: () => Promise<adminLoginResponse>
 }
 
@@ -30,7 +37,23 @@ export const useAdminLogin = (username: string, password: string): UseAdminLogin
     }
   }
 
+
+  const checkAdminToken = async (token: string): Promise<boolean> => {
+    try {
+      if (!token) {
+        return false
+      }
+      const data = await requestCheckAdminToken(token)
+      return true
+    } catch (err) {
+      return false
+    }
+  }
+
+
+
   return {
+    checkAdminToken,
     submit,
   }
 }

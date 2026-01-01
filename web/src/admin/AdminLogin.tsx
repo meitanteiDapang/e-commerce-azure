@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
 import { useAdminLogin } from './useAdminLogin'
 import { useGlobalContext } from '../context/globalContext'
 import './AdminShared.css'
@@ -15,8 +15,37 @@ const AdminLogin = () => {
   const [errorText, setErrorText] = useState<string>('')
   const { globalDispatch } = useGlobalContext()
 
+  const globalContext = useGlobalContext()
+  const token = globalContext.state.adminToken
+
 
   const adminLogin = useAdminLogin(username, password)
+
+
+  const verifyToken = async (): Promise<boolean> =>{
+    if(!token){
+      return false
+    } else {
+      const tokenVerifed = await adminLogin.checkAdminToken(token);
+      return tokenVerifed
+    }
+
+  }
+
+  useEffect(() => {
+    const run = async () => {
+      if (await verifyToken()) {
+        navigate('/admin')
+      }
+    }
+    run()
+  }, [navigate, adminLogin, token])
+
+
+
+
+
+
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

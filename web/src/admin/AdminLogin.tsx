@@ -1,23 +1,30 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react"
-import { useAdminLogin } from "./useAdminLogin";
-
+import { useNavigate } from 'react-router-dom'
+import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useAdminLogin } from './useAdminLogin'
 
 const AdminLogin = () => {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('ps^word');
-  const  adminLogin = useAdminLogin(username, password);
+  const navigate = useNavigate()
+  const [username, setUsername] = useState<string>('admin')
+  const [password, setPassword] = useState<string>('ps^word')
+  const adminLogin = useAdminLogin(username, password)
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    await adminLogin.submit();
-    navigate("/admin");
-  };
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await adminLogin.submit()
+    navigate('/admin')
+  }
+
+  const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value)
+  }
+
+  const handlePasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value)
+  }
 
   const handleBack = () => {
-    navigate("/");
-  };
+    navigate('/')
+  }
 
   return (
     <div className="page bright admin-page">
@@ -35,16 +42,18 @@ const AdminLogin = () => {
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">
               Username
-              <input type="text" 
-              value={username} 
-              onChange={(e)=>{setUsername(e.target.value)}} />
+              <input
+                type="text"
+                value={username}
+                onChange={handleUsernameChange}
+              />
             </label>
             <label className="field">
               Password
               <input
                 type="password"
-                value={password} 
-              onChange={(e)=>{setPassword(e.target.value)}}
+                value={password}
+                onChange={handlePasswordChange}
               />
             </label>
             <button className="book-btn primary" type="submit">
@@ -57,7 +66,7 @@ const AdminLogin = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminLogin;
+export default AdminLogin

@@ -1,23 +1,24 @@
-import { useNavigate } from "react-router-dom";
-import { useRoomTypes } from "../hooks/useRoomTypes.js";
-import { useTestProbe } from "../hooks/useTestProbe.js";
+import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useRoomTypes } from '../hooks/useRoomTypes'
+import { useTestProbe } from '../hooks/useTestProbe'
+import type { RoomType } from '../types'
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  const roomTypes = useRoomTypes();
-  const testProbe = useTestProbe();
+  const navigate = useNavigate()
+  const roomTypes = useRoomTypes()
+  const testProbe = useTestProbe()
 
-  const heroImage =
-    roomTypes.data[2]?.imageUrl || roomTypes.data[0]?.imageUrl || "";
+  const heroImage = roomTypes.data[2]?.imageUrl || roomTypes.data[0]?.imageUrl || ''
 
-  const handleBook = (roomTypeId) => {
-    navigate(`/book?roomTypeId=${roomTypeId}`);
-  };
+  const handleBook = (roomTypeId: RoomType['id']) => {
+    navigate(`/book?roomTypeId=${roomTypeId}`)
+  }
 
-  const handleAdminEntry = (event) => {
-    event.preventDefault();
-    navigate("/login");
-  };
+  const handleAdminEntry = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    navigate('/login')
+  }
 
   return (
     <div className="page bright">
@@ -57,7 +58,7 @@ const HomePage = () => {
               )}
               {testProbe.error && (
                 <span className="pill error-pill">
-                  Failed: {testProbe.error.message ?? "Unknown error"}
+                  Failed: {testProbe.error.message ?? 'Unknown error'}
                 </span>
               )}
               {testProbe.data && !testProbe.error && (
@@ -192,7 +193,7 @@ const HomePage = () => {
         </div>
       </section>
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

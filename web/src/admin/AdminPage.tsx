@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom'
 
 const AdminPage = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="page bright admin-page">
@@ -21,7 +21,7 @@ const AdminPage = () => {
               className="book-btn"
               type="button"
               onClick={() => {
-                navigate("/");
+                navigate('/')
               }}
             >
               Back to homepage
@@ -30,7 +30,7 @@ const AdminPage = () => {
               className="ghost-btn"
               type="button"
               onClick={() => {
-                navigate("/login");
+                navigate('/login')
               }}
             >
               Switch account
@@ -39,7 +39,7 @@ const AdminPage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminPage;
+export default AdminPage

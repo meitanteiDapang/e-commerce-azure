@@ -1,49 +1,51 @@
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useBooking } from "./useBooking.js";
-import { useRoomTypes } from "../hooks/useRoomTypes.js";
+import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useBooking } from './useBooking'
+import { useRoomTypes } from '../hooks/useRoomTypes'
+import type { RoomType } from '../types'
 
-const sanitizePhone = (raw) => {
-  if (!raw) return "";
-  const cleaned = raw.replace(/[^\d+]/g, "");
-  const hasLeadingPlus = cleaned.startsWith("+");
-  const digits = cleaned.replace(/\D/g, "");
-  return hasLeadingPlus ? `+${digits}` : digits;
-};
+const sanitizePhone = (raw: string): string => {
+  if (!raw) return ''
+  const cleaned = raw.replace(/[^\d+]/g, '')
+  const hasLeadingPlus = cleaned.startsWith('+')
+  const digits = cleaned.replace(/\D/g, '')
+  return hasLeadingPlus ? `+${digits}` : digits
+}
 
 const Booking = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const roomTypes = useRoomTypes();
-  const roomTypeId = Number(searchParams.get("roomTypeId"));
-  const selectedRoom =
-    Number.isFinite(roomTypeId) && roomTypeId
-      ? roomTypes.data.find((room) => room.id === roomTypeId)
-      : null;
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const roomTypes = useRoomTypes()
+  const roomTypeParam = searchParams.get('roomTypeId')
+  const roomTypeId = roomTypeParam ? Number(roomTypeParam) : null
+  const selectedRoom: RoomType | null =
+    roomTypeId !== null && Number.isFinite(roomTypeId)
+      ? roomTypes.data.find((room) => room.id === roomTypeId) ?? null
+      : null
 
-  const booking = useBooking(selectedRoom?.id);
-  const [localError, setLocalError] = useState("");
-  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const booking = useBooking(selectedRoom?.id)
+  const [localError, setLocalError] = useState('')
+  const today = useMemo(() => new Date().toISOString().split('T')[0], [])
 
   const handleSuccess = useCallback(
-    (bookingId) => {
-      const selectedId = selectedRoom?.id ? `roomTypeId=${selectedRoom.id}` : "";
-      const suffix = selectedId ? `?${selectedId}` : "";
-      navigate(`/booked${suffix}`);
-      return bookingId;
+    (bookingId: number | null) => {
+      const selectedId = selectedRoom?.id ? `roomTypeId=${selectedRoom.id}` : ''
+      const suffix = selectedId ? `?${selectedId}` : ''
+      navigate(`/booked${suffix}`)
+      return bookingId
     },
-    [navigate, selectedRoom]
-  );
+    [navigate, selectedRoom],
+  )
 
-  const handleSubmit = async () => {
-    setLocalError("");
-    const bookingId = await booking.submit();
+  const handleSubmit = async (): Promise<void> => {
+    setLocalError('')
+    const bookingId = await booking.submit()
     if (bookingId) {
-      handleSuccess(bookingId);
+      handleSuccess(bookingId)
     } else if (!booking.error) {
-      setLocalError("Booking could not be completed. Please try again.");
+      setLocalError('Booking could not be completed. Please try again.')
     }
-  };
+  }
 
   return (
     <div className="booking-page">
@@ -51,7 +53,7 @@ const Booking = () => {
         <button
           className="back-btn"
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate('/')}
         >
           Back to rooms
         </button>
@@ -64,9 +66,7 @@ const Booking = () => {
       <div className="booking-card">
         {roomTypes.loading && <p className="subtext">Loading room details...</p>}
         {roomTypes.error && (
-          <p className="subtext error-text">
-            Failed to load room details: {roomTypes.error.message}
-          </p>
+          <p className="subtext error-text">Failed to load room details: {roomTypes.error.message}</p>
         )}
         {!roomTypes.loading && !roomTypes.error && !selectedRoom && (
           <p className="subtext">Room type not found. Please go back and try again.</p>
@@ -79,7 +79,7 @@ const Booking = () => {
               </div>
               <h2>{selectedRoom.typeName}</h2>
               <p>
-                {selectedRoom.bedNumber} beds · ${selectedRoom.price} ·{" "}
+                {selectedRoom.bedNumber} beds · ${selectedRoom.price} ·{' '}
                 {selectedRoom.availableRoomsNumber} rooms
               </p>
               <p className="subtext">
@@ -95,7 +95,9 @@ const Booking = () => {
                   type="date"
                   value={booking.form.date}
                   min={today}
-                  onChange={(event) => booking.setField("date", event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    booking.setField('date', event.target.value)
+                  }
                 />
               </label>
               <label className="field">
@@ -103,7 +105,9 @@ const Booking = () => {
                 <input
                   type="text"
                   value={booking.form.name}
-                  onChange={(event) => booking.setField("name", event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    booking.setField('name', event.target.value)
+                  }
                   placeholder="Your full name"
                 />
               </label>
@@ -112,7 +116,9 @@ const Booking = () => {
                 <input
                   type="email"
                   value={booking.form.email}
-                  onChange={(event) => booking.setField("email", event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    booking.setField('email', event.target.value)
+                  }
                   placeholder="you@example.com"
                 />
               </label>
@@ -123,7 +129,9 @@ const Booking = () => {
                   value={booking.form.phone}
                   inputMode="tel"
                   pattern="[+0-9]*"
-                  onChange={(event) => booking.setField("phone", sanitizePhone(event.target.value))}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    booking.setField('phone', sanitizePhone(event.target.value))
+                  }
                   placeholder="+64 9 555 4321"
                 />
               </label>
@@ -137,19 +145,17 @@ const Booking = () => {
                 {booking.availability && !booking.checking && !booking.availabilityError && (
                   <span
                     className={
-                      booking.availability.available ? "availability-ok" : "availability-bad"
+                      booking.availability.available ? 'availability-ok' : 'availability-bad'
                     }
                   >
                     {booking.availability.available
                       ? `${booking.availability.remaining} rooms left`
-                      : "Sold out for this date."}
+                      : 'Sold out for this date.'}
                   </span>
                 )}
               </div>
 
-              {(booking.error || localError) && (
-                <p className="subtext error-text">{booking.error || localError}</p>
-              )}
+              {(booking.error || localError) && <p className="subtext error-text">{booking.error || localError}</p>}
               {booking.success && <p className="subtext success-text">{booking.success}</p>}
 
               <button
@@ -162,14 +168,14 @@ const Booking = () => {
                   (booking.availability && !booking.availability.available)
                 }
               >
-                {booking.submitting ? "Booking..." : "Confirm booking"}
+                {booking.submitting ? 'Booking...' : 'Confirm booking'}
               </button>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Booking;
+export default Booking

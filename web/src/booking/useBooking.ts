@@ -1,14 +1,34 @@
 import { useEffect, useState } from 'react'
-import { requestAvailability, requestCreateBooking } from './bookingApi.js'
+import { requestAvailability, requestCreateBooking } from './bookingApi'
+import type { Availability } from '../types'
 
-export const useBooking = (roomTypeId) => {
-  const [form, setForm] = useState({
+interface BookingForm {
+  date: string
+  name: string
+  email: string
+  phone: string
+}
+
+interface UseBookingResult {
+  form: BookingForm
+  setField: <K extends keyof BookingForm>(field: K, value: BookingForm[K]) => void
+  availability: Availability | null
+  checking: boolean
+  submitting: boolean
+  error: string
+  availabilityError: string
+  success: string
+  submit: () => Promise<number | null>
+}
+
+export const useBooking = (roomTypeId?: number | null): UseBookingResult => {
+  const [form, setForm] = useState<BookingForm>({
     date: '',
     name: '',
     email: '',
     phone: '',
   })
-  const [availability, setAvailability] = useState(null)
+  const [availability, setAvailability] = useState<Availability | null>(null)
   const [checking, setChecking] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -33,7 +53,8 @@ export const useBooking = (roomTypeId) => {
         }
       } catch (err) {
         if (!controller.signal.aborted) {
-          setAvailabilityError(err.message || 'Failed to check availability.')
+          const message = err instanceof Error ? err.message : 'Failed to check availability.'
+          setAvailabilityError(message)
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -46,41 +67,41 @@ export const useBooking = (roomTypeId) => {
     return () => controller.abort()
   }, [roomTypeId, form.date])
 
-  const setField = (field, value) => {
+  const setField = <K extends keyof BookingForm>(field: K, value: BookingForm[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const submit = async () => {
+  const submit = async (): Promise<number | null> => {
     setError('')
     setSuccess('')
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    if (!roomTypeId) {
+    if (roomTypeId == null) {
       setError('Please select a room type first.')
-      return
+      return null
     }
 
     if (!form.date || !form.name || !form.email || !form.phone) {
       setError('Please fill out date, name, email, and phone.')
-      return
+      return null
     }
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailPattern.test(form.email)) {
       setError('Please enter a valid email address.')
-      return
+      return null
     }
 
     const chosenDate = new Date(form.date)
     if (Number.isNaN(chosenDate.getTime()) || chosenDate < today) {
       setError('Please select a future date.')
-      return
+      return null
     }
 
     if (availability && !availability.available) {
       setError('This room type is sold out for the selected date.')
-      return
+      return null
     }
 
     setSubmitting(true)
@@ -95,7 +116,8 @@ export const useBooking = (roomTypeId) => {
       setSuccess('Booking confirmed. We will reach out shortly.')
       return result?.id ?? null
     } catch (err) {
-      setError(err.message || 'Failed to create booking.')
+      const message = err instanceof Error ? err.message : 'Failed to create booking.'
+      setError(message)
     } finally {
       setSubmitting(false)
     }

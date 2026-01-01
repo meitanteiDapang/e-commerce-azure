@@ -1,6 +1,20 @@
 import { apiUrl } from '../apiClient'
+import type { Availability, BookingResult } from '../types'
 
-export const requestAvailability = async ({ roomTypeId, date }) => {
+interface AvailabilityParams {
+  roomTypeId: number
+  date: string
+}
+
+interface CreateBookingPayload {
+  roomTypeId: number
+  date: string
+  name: string
+  email: string
+  phone: string
+}
+
+export const requestAvailability = async ({ roomTypeId, date }: AvailabilityParams): Promise<Availability> => {
   const params = new URLSearchParams({ date })
   const res = await fetch(apiUrl(`/room-types/${roomTypeId}/availability?${params.toString()}`))
   if (!res.ok) {
@@ -9,7 +23,13 @@ export const requestAvailability = async ({ roomTypeId, date }) => {
   return res.json()
 }
 
-export const requestCreateBooking = async ({ roomTypeId, date, name, email, phone }) => {
+export const requestCreateBooking = async ({
+  roomTypeId,
+  date,
+  name,
+  email,
+  phone,
+}: CreateBookingPayload): Promise<BookingResult> => {
   const res = await fetch(apiUrl('/bookings'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

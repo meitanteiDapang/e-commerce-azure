@@ -1,4 +1,17 @@
-const AdminLogin = ({ onSubmit, onBack }) => {
+import { useNavigate } from "react-router-dom";
+
+const AdminLogin = () => {
+  const navigate = useNavigate();
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate("/admin");
+  };
+
+  const handleBack = () => {
+    navigate("/");
+  };
+
   return (
     <div className="page bright admin-page">
       <div className="glow glow-one" />
@@ -12,7 +25,7 @@ const AdminLogin = ({ onSubmit, onBack }) => {
               Enter your credentials to reach the admin console.
             </p>
           </div>
-          <form className="auth-form" onSubmit={onSubmit}>
+          <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">
               Username
               <input type="text" name="username" autoComplete="username" />
@@ -28,7 +41,7 @@ const AdminLogin = ({ onSubmit, onBack }) => {
             <button className="book-btn primary" type="submit">
               Enter admin
             </button>
-            <button className="ghost-btn" type="button" onClick={onBack}>
+            <button className="ghost-btn" type="button" onClick={handleBack}>
               Back to homepage
             </button>
           </form>

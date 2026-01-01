@@ -1,35 +1,11 @@
 import { useEffect, useState } from "react";
+import { Route, Routes, useNavigate, useSearchParams } from "react-router-dom";
 import BookingPage from "./booking/BookingPage.jsx";
 import BookingSuccessPage from "./booking/BookingSuccessPage.jsx";
+import AdminLogin from "./admin/AdminLogin.jsx";
+import AdminPage from "./admin/AdminPage.jsx";
 import "./App.css";
 import { apiUrl } from "./apiClient.js";
-
-const parseRoute = () => {
-  // Normalize hash so both "#booked" and "#/booked" work
-  const hash = window.location.hash
-    .replace(/^#/, "")
-    .trim()
-    .replace(/^\/+/, "");
-  if (!hash) return { name: "home" };
-  const [path, query] = hash.split("?");
-  if (path === "book") {
-    const params = new URLSearchParams(query);
-    const roomTypeId = Number(params.get("roomTypeId"));
-    return {
-      name: "book",
-      roomTypeId: Number.isFinite(roomTypeId) ? roomTypeId : null,
-    };
-  }
-  if (path === "booked") {
-    const params = new URLSearchParams(query);
-    const roomTypeId = Number(params.get("roomTypeId"));
-    return {
-      name: "booked",
-      roomTypeId: Number.isFinite(roomTypeId) ? roomTypeId : null,
-    };
-  }
-  return { name: "home" };
-};
 
 function App() {
   const [roomTypes, setRoomTypes] = useState({
@@ -37,7 +13,8 @@ function App() {
     data: [],
     error: null,
   });
-  const [route, setRoute] = useState(() => parseRoute());
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [testProbe, setTestProbe] = useState({
     loading: true,
     data: null,
@@ -67,12 +44,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const handleHashChange = () => setRoute(parseRoute());
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  useEffect(() => {
     const controller = new AbortController();
     const fetchTest = async () => {
       try {
@@ -95,212 +66,267 @@ function App() {
 
   const heroImage =
     roomTypes.data[2]?.imageUrl || roomTypes.data[0]?.imageUrl || "";
+  const roomTypeId = Number(searchParams.get("roomTypeId"));
   const selectedRoom =
-    route.name === "book" && route.roomTypeId
-      ? roomTypes.data.find((room) => room.id === route.roomTypeId)
+    Number.isFinite(roomTypeId) && roomTypeId
+      ? roomTypes.data.find((room) => room.id === roomTypeId)
       : null;
 
   const handleBook = (roomTypeId) => {
-    window.location.hash = `book?roomTypeId=${roomTypeId}`;
+    navigate(`/book?roomTypeId=${roomTypeId}`);
   };
 
-  if (route.name === "book") {
-    return (
-      <BookingPage
-        roomType={selectedRoom}
-        loading={roomTypes.loading}
-        error={roomTypes.error}
-        onBack={() => {
-          window.location.hash = "";
-        }}
-        onSuccess={(bookingId) => {
-          const roomTypeId = selectedRoom?.id
-            ? `roomTypeId=${selectedRoom.id}`
-            : "";
-          const suffix = roomTypeId ? `?${roomTypeId}` : "";
-          window.location.hash = `booked${suffix}`;
-        }}
-      />
-    );
-  }
+  const handleAdminEntry = (event) => {
+    event.preventDefault();
+    navigate("/login");
+  };
 
-  if (route.name === "booked") {
-    return (
-      <BookingSuccessPage
-        roomType={selectedRoom}
-        onBack={() => {
-          window.location.hash = "";
-        }}
-      />
-    );
-  }
+  const handleLoginSubmit = (event) => {
+    event.preventDefault();
+    navigate("/admin");
+  };
 
   return (
-    <div className="page bright">
-      <div className="glow glow-one" />
-      <div className="glow glow-two" />
+    <Routes>
+      <Route
+        path="/book"
+        element={
+          <BookingPage
+            roomType={selectedRoom}
+            loading={roomTypes.loading}
+            error={roomTypes.error}
+            onBack={() => {
+              navigate("/");
+            }}
+            onSuccess={() => {
+              const selectedId = selectedRoom?.id
+                ? `roomTypeId=${selectedRoom.id}`
+                : "";
+              const suffix = selectedId ? `?${selectedId}` : "";
+              navigate(`/booked${suffix}`);
+            }}
+          />
+        }
+      />
+      <Route
+        path="/booked"
+        element={
+          <BookingSuccessPage
+            roomType={selectedRoom}
+            onBack={() => {
+              navigate("/");
+            }}
+          />
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <AdminLogin
+            onSubmit={handleLoginSubmit}
+            onBack={() => {
+              navigate("/");
+            }}
+          />
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminPage
+            onBack={() => {
+              navigate("/");
+            }}
+            onSwitch={() => {
+              navigate("/login");
+            }}
+          />
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <div className="page bright">
+            <div className="glow glow-one" />
+            <div className="glow glow-two" />
 
-      <header className="hero hero-bright">
-        <div className="nav">
-          <div className="logo">Dapang motel</div>
-          <div className="nav-actions">
-            <span className="pill loud">
-              Dapang is a cat. The motel is his.
-            </span>
-            <span className="pill">Check-in 24/7 · Ocean breeze</span>
-          </div>
-        </div>
-
-        <div className="booking-test">
-          <div className="test-card">
-            <div>
-              <p className="eyebrow">API probe</p>
-              <h2>Live test ping</h2>
-              <p className="subtext">
-                We call the backend test endpoint and surface its reply.
-              </p>
-            </div>
-            <div className="test-result">
-              {testProbe.loading && (
-                <span className="pill">Contacting API...</span>
-              )}
-              {testProbe.error && (
-                <span className="pill error-pill">
-                  Failed: {testProbe.error.message ?? "Unknown error"}
-                </span>
-              )}
-              {testProbe.data && !testProbe.error && (
-                <div className="pill success-pill">
-                  <div>{testProbe.data.message}</div>
-                  {testProbe.data.timestamp && (
-                    <div className="pill-subtext">
-                      {new Date(testProbe.data.timestamp).toLocaleString()}
-                    </div>
-                  )}
+            <header className="hero hero-bright">
+              <div className="nav">
+                <div className="logo">Dapang motel</div>
+                <div className="nav-actions">
+                  <span className="pill loud">
+                    Dapang is a cat. The motel is his.
+                  </span>
+                  <span className="pill">Check-in 24/7 · Ocean breeze</span>
+                  <button
+                    className="admin-link"
+                    type="button"
+                    onClick={handleAdminEntry}
+                  >
+                    Admin entry
+                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
+              </div>
 
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <p className="eyebrow">Boutique cat motel · Auckland shoreline</p>
-            <h1>
-              A louder, brighter, cozier stay—curated by <span>Dapang</span>,
-              resident king of naps and neon.
-            </h1>
-            <p className="lede">
-              Think pastel mornings, citrus sunsets, chrome accents, and a cat
-              who owns the lobby. Rooms glow, vinyl hums, and the concierge
-              knows where Dapang hides the best sunbeams.
-            </p>
-            <div className="meta meta-bright">
-              <div>
-                <strong>4.9</strong> Guest rating
+              <div className="booking-test">
+                <div className="test-card">
+                  <div>
+                    <p className="eyebrow">API probe</p>
+                    <h2>Live test ping</h2>
+                    <p className="subtext">
+                      We call the backend test endpoint and surface its reply.
+                    </p>
+                  </div>
+                  <div className="test-result">
+                    {testProbe.loading && (
+                      <span className="pill">Contacting API...</span>
+                    )}
+                    {testProbe.error && (
+                      <span className="pill error-pill">
+                        Failed: {testProbe.error.message ?? "Unknown error"}
+                      </span>
+                    )}
+                    {testProbe.data && !testProbe.error && (
+                      <div className="pill success-pill">
+                        <div>{testProbe.data.message}</div>
+                        {testProbe.data.timestamp && (
+                          <div className="pill-subtext">
+                            {new Date(
+                              testProbe.data.timestamp
+                            ).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div>
-                <strong>12</strong> Suites blessed by Dapang
-              </div>
-              <div>
-                <strong>08</strong> Steps to sunrise walk
-              </div>
-            </div>
-          </div>
 
-          <div className="hero-card hero-card-bright">
-            <div className="card-top">
-              <div className="chip loud">Sunrise candy</div>
-              <div className="chip dark">Dapang-approved</div>
-            </div>
-            <div className="hero-visual hero-visual-bright">
-              <div className="hero-frame bright-frame">
-                <div className="frame-inner">
-                  {heroImage ? (
-                    <img
-                      src={heroImage}
-                      alt="Featured room"
-                      className="frame-img"
-                    />
-                  ) : (
-                    <div className="frame-img frame-fallback">
-                      Loading room...
+              <div className="hero-grid">
+                <div className="hero-copy">
+                  <p className="eyebrow">
+                    Boutique cat motel · Auckland shoreline
+                  </p>
+                  <h1>
+                    A louder, brighter, cozier stay—curated by{" "}
+                    <span>Dapang</span>, resident king of naps and neon.
+                  </h1>
+                  <p className="lede">
+                    Think pastel mornings, citrus sunsets, chrome accents, and a
+                    cat who owns the lobby. Rooms glow, vinyl hums, and the
+                    concierge knows where Dapang hides the best sunbeams.
+                  </p>
+                  <div className="meta meta-bright">
+                    <div>
+                      <strong>4.9</strong> Guest rating
                     </div>
-                  )}
-                  <div className="frame-overlay">
-                    <div className="frame-text">After-dark patrols</div>
-                    <div className="frame-stats">
-                      <span>Neon lamps</span>
-                      <span>Ocean hush</span>
-                      <span>Soft paws</span>
+                    <div>
+                      <strong>12</strong> Suites blessed by Dapang
+                    </div>
+                    <div>
+                      <strong>08</strong> Steps to sunrise walk
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hero-card hero-card-bright">
+                  <div className="card-top">
+                    <div className="chip loud">Sunrise candy</div>
+                    <div className="chip dark">Dapang-approved</div>
+                  </div>
+                  <div className="hero-visual hero-visual-bright">
+                    <div className="hero-frame bright-frame">
+                      <div className="frame-inner">
+                        {heroImage ? (
+                          <img
+                            src={heroImage}
+                            alt="Featured room"
+                            className="frame-img"
+                          />
+                        ) : (
+                          <div className="frame-img frame-fallback">
+                            Loading room...
+                          </div>
+                        )}
+                        <div className="frame-overlay">
+                          <div className="frame-text">After-dark patrols</div>
+                          <div className="frame-stats">
+                            <span>Neon lamps</span>
+                            <span>Ocean hush</span>
+                            <span>Soft paws</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="hero-caption">
+                      Chrome, candy glass, and cat-approved corners.
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="hero-caption">
-                Chrome, candy glass, and cat-approved corners.
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+            </header>
 
-      <section className="section highlights">
-        <div className="section-header">
-          <p className="eyebrow">Dapang manifesto</p>
-          <h2>Book your stay now!</h2>
-        </div>
-        {roomTypes.loading && <p className="subtext">Loading room types...</p>}
-        {roomTypes.error && (
-          <p className="subtext error-text">
-            Failed to load room types: {roomTypes.error.message}
-          </p>
-        )}
-        {!roomTypes.loading && !roomTypes.error && (
-          <div className="grid three">
-            {roomTypes.data.slice(0, 4).map((room) => (
-              <div className="highlight-card bright-card" key={room.id}>
-                <div className="img-wrap">
-                  <img src={room.imageUrl} alt={room.typeName} />
-                </div>
-                <h3>{room.typeName}</h3>
-                <p>
-                  {room.bedNumber} beds · ${room.price}
+            <section className="section highlights">
+              <div className="section-header">
+                <p className="eyebrow">Dapang manifesto</p>
+                <h2>Book your stay now!</h2>
+              </div>
+              {roomTypes.loading && (
+                <p className="subtext">Loading room types...</p>
+              )}
+              {roomTypes.error && (
+                <p className="subtext error-text">
+                  Failed to load room types: {roomTypes.error.message}
                 </p>
-                <div className="card-actions">
-                  <button
-                    className="book-btn"
-                    type="button"
-                    onClick={() => handleBook(room.id)}
-                  >
-                    Book
-                  </button>
+              )}
+              {!roomTypes.loading && !roomTypes.error && (
+                <div className="grid three">
+                  {roomTypes.data.slice(0, 4).map((room) => (
+                    <div className="highlight-card bright-card" key={room.id}>
+                      <div className="img-wrap">
+                        <img src={room.imageUrl} alt={room.typeName} />
+                      </div>
+                      <h3>{room.typeName}</h3>
+                      <p>
+                        {room.bedNumber} beds · ${room.price}
+                      </p>
+                      <div className="card-actions">
+                        <button
+                          className="book-btn"
+                          type="button"
+                          onClick={() => handleBook(room.id)}
+                        >
+                          Book
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="section contact contact-bright">
+              <div className="contact-card">
+                <div>
+                  <p className="eyebrow">Location</p>
+                  <h2>Dapang motel · 711 Dapang Road, Dapang City</h2>
+                </div>
+                <div className="contact-meta">
+                  <div>
+                    <p className="label">Phone</p>
+                    <p className="value">+64 20 424 5777</p>
+                  </div>
+                  <div>
+                    <p className="label">Email</p>
+                    <p className="value">dapang@dapangmotel.com</p>
+                  </div>
                 </div>
               </div>
-            ))}
+            </section>
           </div>
-        )}
-      </section>
-
-      <section className="section contact contact-bright">
-        <div className="contact-card">
-          <div>
-            <p className="eyebrow">Location</p>
-            <h2>Dapang motel · 711 Dapang Road, Dapang City</h2>
-          </div>
-          <div className="contact-meta">
-            <div>
-              <p className="label">Phone</p>
-              <p className="value">+64 20 424 5777</p>
-            </div>
-            <div>
-              <p className="label">Email</p>
-              <p className="value">dapang@dapangmotel.com</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+        }
+      />
+    </Routes>
   );
 }
 

@@ -2,7 +2,50 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
+  name: {{ .Release.Name }}-web
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- if .Values.certManager.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.certManager.clusterIssuerName | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      try_files $uri $uri/ /index.html;
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
+  {{- if and .Values.ingress.host .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | quote }}
+      secretName: {{ .Values.ingress.tls.secretName | quote }}
+  {{- end }}
+  rules:
+    {{- if .Values.ingress.host }}
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-web
+                port:
+                  number: 80
+    {{- end }}
+    # Catch-all rule so ingress IP works without Host header
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-web
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-api
   namespace: {{ .Release.Namespace }}
   annotations:
     {{- if .Values.certManager.enabled }}
@@ -10,10 +53,12 @@ metadata:
     {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
-  {{- if and .Values.ingress.host .Values.ingress.tls.enabled }}
+  {{- if and (or .Values.ingress.host .Values.ingress.apiHost) .Values.ingress.tls.enabled }}
   tls:
     - hosts:
+        {{- if .Values.ingress.host }}
         - {{ .Values.ingress.host | quote }}
+        {{- end }}
         {{- if .Values.ingress.apiHost }}
         - {{ .Values.ingress.apiHost | quote }}
         {{- end }}
@@ -29,14 +74,6 @@ spec:
             backend:
               service:
                 name: {{ .Release.Name }}-api
-                port:
-                  number: 80
-
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-web
                 port:
                   number: 80
     {{- end }}
@@ -60,13 +97,6 @@ spec:
             backend:
               service:
                 name: {{ .Release.Name }}-api
-                port:
-                  number: 80
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-web
                 port:
                   number: 80
 {{- end }}

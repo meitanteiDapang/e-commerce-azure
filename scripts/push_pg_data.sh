@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+
+
 # Restore a SQL backup into the Postgres pod deployed by Helm.
 # Usage: ./scripts/restore_pg_backup.sh [path/to/backup.sql]
 # Defaults: backups/appdb.sql, namespace=ecommerce, release=ecommerce, user=app, db=appdb, password=app_pw
@@ -24,6 +27,9 @@ if [[ -z "$POD_NAME" ]]; then
   exit 1
 fi
 echo "Found pod: $POD_NAME"
+
+echo "==> Rebuilding schema..."
+kubectl exec -n "$NAMESPACE" "$POD_NAME" -- env PGPASSWORD="$DB_PASSWORD" psql -U "$DB_USER" -d "$DB_NAME" -c "DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;"
 
 echo "==> Copying backup to pod..."
 kubectl cp "$BACKUP_FILE" "$NAMESPACE/$POD_NAME":/tmp/appdb.sql

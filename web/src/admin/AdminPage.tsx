@@ -83,6 +83,19 @@ const AdminPage = () => {
   }, [token])
 
 
+  const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
+    if (roomTypeId != null && roomNumber != null) {
+      return `t${roomTypeId}-${roomNumber}`
+    }
+    if (roomTypeId != null) {
+      return `t${roomTypeId}-?`
+    }
+    if (roomNumber != null) {
+      return `t?-${roomNumber}`
+    }
+    return '-'
+  }
+
   return (
     <div className="page bright admin-page">
       <div className="glow glow-one" />
@@ -118,8 +131,7 @@ const AdminPage = () => {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Room Type</th>
-                    <th>Room #</th>
+                    <th>Room</th>
                     <th>Check-in</th>
                     <th>Check-out</th>
                     <th>Name</th>
@@ -131,8 +143,7 @@ const AdminPage = () => {
                   {bookings.map((booking, index) => (
                     <tr key={booking.id ?? `${booking.guestEmail ?? 'booking'}-${index}`}>
                       <td>{booking.id ?? '-'}</td>
-                      <td>{booking.roomTypeId ?? '-'}</td>
-                      <td>{booking.roomNumber ?? '-'}</td>
+                      <td>{formatRoomLabel(booking.roomTypeId, booking.roomNumber)}</td>
                       <td>{booking.checkInDate ?? '-'}</td>
                       <td>{booking.checkOutDate ?? '-'}</td>
                       <td>{booking.guestName ?? '-'}</td>

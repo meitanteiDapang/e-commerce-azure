@@ -8,8 +8,10 @@ metadata:
     {{- if .Values.certManager.enabled }}
     cert-manager.io/cluster-issuer: {{ .Values.certManager.clusterIssuerName | quote }}
     {{- end }}
+    {{- if .Values.ingress.enableConfigurationSnippet }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       try_files $uri $uri/ /index.html;
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
   {{- if and .Values.ingress.host .Values.ingress.tls.enabled }}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createBooking, fetchAvailability } from './bookingApi.js'
+import { requestAvailability, requestCreateBooking } from './bookingApi.js'
 
 export const useBooking = (roomTypeId) => {
   const [form, setForm] = useState({
@@ -27,7 +27,7 @@ export const useBooking = (roomTypeId) => {
       setChecking(true)
       setAvailabilityError('')
       try {
-        const data = await fetchAvailability({ roomTypeId, date: form.date })
+        const data = await requestAvailability({ roomTypeId, date: form.date })
         if (!controller.signal.aborted) {
           setAvailability(data)
         }
@@ -85,7 +85,7 @@ export const useBooking = (roomTypeId) => {
 
     setSubmitting(true)
     try {
-      const result = await createBooking({
+      const result = await requestCreateBooking({
         roomTypeId,
         date: form.date,
         name: form.name,

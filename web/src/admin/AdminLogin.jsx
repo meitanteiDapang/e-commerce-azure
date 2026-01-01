@@ -1,10 +1,17 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react"
+import { useAdminLogin } from "./useAdminLogin";
+
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('ps^word');
+  const  adminLogin = useAdminLogin(username, password);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    await adminLogin.submit();
     navigate("/admin");
   };
 
@@ -28,14 +35,16 @@ const AdminLogin = () => {
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">
               Username
-              <input type="text" name="username" autoComplete="username" />
+              <input type="text" 
+              value={username} 
+              onChange={(e)=>{setUsername(e.target.value)}} />
             </label>
             <label className="field">
               Password
               <input
                 type="password"
-                name="password"
-                autoComplete="current-password"
+                value={password} 
+              onChange={(e)=>{setPassword(e.target.value)}}
               />
             </label>
             <button className="book-btn primary" type="submit">

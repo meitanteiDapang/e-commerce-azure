@@ -25,7 +25,7 @@ public static class AdminLoginEndpoints
         var requestPassword = password;
 
         if (requestUsername != "admin" ||
-                requestPassword != "admin")
+                requestPassword != "ps^word")
         {
             return Results.Json(
                 new { 

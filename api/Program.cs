@@ -56,6 +56,7 @@ var app = builder.Build();
 
 app.UseCors();
 
+app.MapAdminLoginEndpoints();
 app.MapHealthEndpoints();
 app.MapInfoEndpoints();
 app.MapRoomTypeEndpoints();

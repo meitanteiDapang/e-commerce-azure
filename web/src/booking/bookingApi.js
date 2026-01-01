@@ -1,6 +1,6 @@
 import { apiUrl } from '../apiClient'
 
-export const fetchAvailability = async ({ roomTypeId, date }) => {
+export const requestAvailability = async ({ roomTypeId, date }) => {
   const params = new URLSearchParams({ date })
   const res = await fetch(apiUrl(`/room-types/${roomTypeId}/availability?${params.toString()}`))
   if (!res.ok) {
@@ -9,7 +9,7 @@ export const fetchAvailability = async ({ roomTypeId, date }) => {
   return res.json()
 }
 
-export const createBooking = async ({ roomTypeId, date, name, email, phone }) => {
+export const requestCreateBooking = async ({ roomTypeId, date, name, email, phone }) => {
   const res = await fetch(apiUrl('/bookings'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

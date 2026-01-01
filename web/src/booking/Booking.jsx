@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useBooking } from "./useBooking.js";
 import { useRoomTypes } from "../hooks/useRoomTypes.js";
@@ -23,7 +23,6 @@ const Booking = () => {
 
   const booking = useBooking(selectedRoom?.id);
   const [localError, setLocalError] = useState("");
-  const [redirected, setRedirected] = useState(false);
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   const handleSuccess = useCallback(
@@ -33,21 +32,13 @@ const Booking = () => {
       navigate(`/booked${suffix}`);
       return bookingId;
     },
-    [navigate, selectedRoom?.id]
+    [navigate, selectedRoom]
   );
-
-  useEffect(() => {
-    if (!redirected && booking.success) {
-      setRedirected(true);
-      handleSuccess();
-    }
-  }, [booking.success, handleSuccess, redirected]);
 
   const handleSubmit = async () => {
     setLocalError("");
     const bookingId = await booking.submit();
     if (bookingId) {
-      setRedirected(true);
       handleSuccess(bookingId);
     } else if (!booking.error) {
       setLocalError("Booking could not be completed. Please try again.");

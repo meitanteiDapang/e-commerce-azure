@@ -4,6 +4,7 @@ import BookingPage from "./booking/BookingPage.jsx";
 import BookingSuccessPage from "./booking/BookingSuccessPage.jsx";
 import AdminLogin from "./admin/AdminLogin.jsx";
 import AdminPage from "./admin/AdminPage.jsx";
+import AdminEntryButton from "./admin/AdminEntryButton.jsx";
 import "./App.css";
 import { apiUrl } from "./apiClient.js";
 
@@ -76,16 +77,6 @@ function App() {
     navigate(`/book?roomTypeId=${roomTypeId}`);
   };
 
-  const handleAdminEntry = (event) => {
-    event.preventDefault();
-    navigate("/login");
-  };
-
-  const handleLoginSubmit = (event) => {
-    event.preventDefault();
-    navigate("/admin");
-  };
-
   return (
     <Routes>
       <Route
@@ -121,27 +112,11 @@ function App() {
       />
       <Route
         path="/login"
-        element={
-          <AdminLogin
-            onSubmit={handleLoginSubmit}
-            onBack={() => {
-              navigate("/");
-            }}
-          />
-        }
+        element={<AdminLogin />}
       />
       <Route
         path="/admin"
-        element={
-          <AdminPage
-            onBack={() => {
-              navigate("/");
-            }}
-            onSwitch={() => {
-              navigate("/login");
-            }}
-          />
-        }
+        element={<AdminPage />}
       />
       <Route
         path="/"
@@ -158,13 +133,7 @@ function App() {
                     Dapang is a cat. The motel is his.
                   </span>
                   <span className="pill">Check-in 24/7 · Ocean breeze</span>
-                  <button
-                    className="admin-link"
-                    type="button"
-                    onClick={handleAdminEntry}
-                  >
-                    Admin entry
-                  </button>
+                  <AdminEntryButton />
                 </div>
               </div>
 

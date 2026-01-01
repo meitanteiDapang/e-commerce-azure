@@ -1,4 +1,8 @@
-const AdminPage = ({ onBack, onSwitch }) => {
+import { useNavigate } from "react-router-dom";
+
+const AdminPage = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="page bright admin-page">
       <div className="glow glow-one" />
@@ -13,10 +17,22 @@ const AdminPage = ({ onBack, onSwitch }) => {
             </p>
           </div>
           <div className="admin-actions">
-            <button className="book-btn" type="button" onClick={onBack}>
+            <button
+              className="book-btn"
+              type="button"
+              onClick={() => {
+                navigate("/");
+              }}
+            >
               Back to homepage
             </button>
-            <button className="ghost-btn" type="button" onClick={onSwitch}>
+            <button
+              className="ghost-btn"
+              type="button"
+              onClick={() => {
+                navigate("/login");
+              }}
+            >
               Switch account
             </button>
           </div>

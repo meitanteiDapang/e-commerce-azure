@@ -18,6 +18,8 @@ public static class LoadBookingsEndpoints
     private static async Task<IResult> GetLoadBookings(
         AppDbContext db,
         string? scope,
+        int? page,
+        int? pageSize,
         CancellationToken cancellationToken = default
     )
     {
@@ -38,9 +40,18 @@ public static class LoadBookingsEndpoints
             query = query.Where(booking => booking.CheckInDate >= today);
         }
 
+        var total = await query.CountAsync(cancellationToken);
+
+        var pageNumber = page.GetValueOrDefault(1);
+        var pageSizeValue = pageSize.GetValueOrDefault(20);
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        pageSizeValue = pageSizeValue < 1 ? 20 : pageSizeValue;
+
         var bookings = await query
             .OrderBy(booking => booking.CheckInDate)
             .ThenBy(booking => booking.Id)
+            .Skip((pageNumber - 1) * pageSizeValue)
+            .Take(pageSizeValue)
             .Select(booking => new
             {
                 booking.Id,
@@ -57,6 +68,6 @@ public static class LoadBookingsEndpoints
             })
             .ToListAsync(cancellationToken);
 
-        return Results.Ok(new { bookings });
+        return Results.Ok(new { bookings, total });
     }
 }

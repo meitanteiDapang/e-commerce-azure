@@ -6,9 +6,12 @@ import type { AdminBooking } from './AdminPage'
 const BookingsTable = () => {
   const { state } = useGlobalContext()
   const token = state.adminToken
+  const PAGE_SIZE = 20
   const [bookings, setBookings] = useState<AdminBooking[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showFutureOnly, setShowFutureOnly] = useState(true)
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState<number | null>(null)
 
   useEffect(() => {
     if (!token) {
@@ -19,7 +22,12 @@ const BookingsTable = () => {
     const load = async () => {
       try {
         const scope = showFutureOnly ? 'future' : 'all'
-        const res = await fetch(apiUrl(`/admin/loadBookings?scope=${scope}`), {
+        const params = new URLSearchParams({
+          scope,
+          page: page.toString(),
+          pageSize: PAGE_SIZE.toString(),
+        })
+        const res = await fetch(apiUrl(`/admin/loadBookings?${params.toString()}`), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -35,23 +43,30 @@ const BookingsTable = () => {
           return
         }
 
-        const payload = data as { bookings?: unknown } | unknown[]
+        const payload = data as { bookings?: unknown; total?: unknown } | unknown[]
         const items = Array.isArray(payload)
           ? payload
           : Array.isArray((payload as { bookings?: unknown }).bookings)
             ? (payload as { bookings: unknown[] }).bookings
             : []
+        const totalCount =
+          !Array.isArray(payload) && typeof (payload as { total?: unknown }).total === 'number'
+            ? Math.max(0, Math.floor((payload as { total: number }).total))
+            : null
         setBookings(items as AdminBooking[])
+        setTotal(totalCount)
         setLoadError(null)
       } catch (err) {
         if (!isActive) return
         if (err instanceof Error) {
           setLoadError(err.message)
           setBookings([])
+          setTotal(null)
           return
         }
         setLoadError('Unknown error')
         setBookings([])
+        setTotal(null)
       }
     }
 
@@ -59,7 +74,7 @@ const BookingsTable = () => {
     return () => {
       isActive = false
     }
-  }, [token, showFutureOnly])
+  }, [token, showFutureOnly, page])
 
   const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
     if (roomTypeId != null && roomNumber != null) {
@@ -85,6 +100,7 @@ const BookingsTable = () => {
           className="book-btn admin-flat-btn admin-toggle-btn"
           type="button"
           onClick={() => {
+            setPage(1)
             setShowFutureOnly((prev) => !prev)
           }}
         >
@@ -145,6 +161,28 @@ const BookingsTable = () => {
             </tbody>
           </table>
         )}
+      </div>
+      <div className="admin-pagination">
+        <button
+          className="book-btn admin-flat-btn"
+          type="button"
+          disabled={page === 1}
+          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+        >
+          Previous
+        </button>
+        <span className="admin-page-info">
+          Page {page}
+          {total != null ? ` / ${Math.max(1, Math.ceil(total / PAGE_SIZE))}` : ''}
+        </span>
+        <button
+          className="book-btn admin-flat-btn"
+          type="button"
+          disabled={total != null ? page * PAGE_SIZE >= total : bookings.length < PAGE_SIZE}
+          onClick={() => setPage((prev) => prev + 1)}
+        >
+          Next
+        </button>
       </div>
     </>
   )

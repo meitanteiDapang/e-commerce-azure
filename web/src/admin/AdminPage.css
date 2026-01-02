@@ -95,6 +95,18 @@ button {
   margin-bottom: 18px;
 }
 
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.admin-page-info {
+  font-weight: 700;
+  color: #1e2636;
+}
+
 .admin-flat-btn {
   border-radius: 12px;
   box-shadow: none;

@@ -11,8 +11,7 @@ export const requestAdminLogin = async (username: string, password: string): Pro
   }
 
   const data = await res.json().catch(() => null)
-
-
+  // Backend sometimes returns JSON with a status field; surface that message if provided.
   if (data.status == 401) {
     const message = (data as { message: string }).message
     throw new Error(message)

@@ -28,6 +28,7 @@ export const useRoomTypes = (): RoomTypesState => {
         setRoomTypes({ loading: false, data, error: null })
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return
+        // Normalize unknown errors into Error for consistent rendering.
         const error = err instanceof Error ? err : new Error('Failed to load room types.')
         setRoomTypes({ loading: false, data: [], error })
       }

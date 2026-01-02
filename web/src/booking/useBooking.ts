@@ -74,6 +74,7 @@ export const useBooking = (roomTypeId?: number | null): UseBookingResult => {
         }
       } catch (err) {
         if (!controller.signal.aborted) {
+          // Coerce unknown errors into a string-friendly Error for UI display.
           const message = err instanceof Error ? err.message : 'Failed to check availability.'
           setAvailability(null)
           setAvailabilityError(message)

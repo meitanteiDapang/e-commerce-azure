@@ -5,12 +5,21 @@ import { useRoomTypes } from '../hooks/useRoomTypes'
 import type { RoomType } from '../types'
 import './booking.css'
 
+// Keep only digits and a single leading plus so the API receives a clean phone number.
 const sanitizePhone = (raw: string): string => {
   if (!raw) return ''
   const cleaned = raw.replace(/[^\d+]/g, '')
   const hasLeadingPlus = cleaned.startsWith('+')
   const digits = cleaned.replace(/\D/g, '')
   return hasLeadingPlus ? `+${digits}` : digits
+}
+
+// Convert Date -> yyyy-mm-dd for date inputs.
+const toIsoDate = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 const Booking = () => {
@@ -26,29 +35,17 @@ const Booking = () => {
 
   const booking = useBooking(selectedRoom?.id)
   const [localError, setLocalError] = useState('')
-  const today = useMemo(() => {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }, [])
+  const today = useMemo(() => toIsoDate(new Date()), [])
   const minCheckOutDate = useMemo(() => {
     if (!booking.form.checkInDate) {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
-      const year = tomorrow.getFullYear()
-      const month = String(tomorrow.getMonth() + 1).padStart(2, '0')
-      const day = String(tomorrow.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
+      return toIsoDate(tomorrow)
     }
     const parsed = new Date(booking.form.checkInDate)
     if (Number.isNaN(parsed.getTime())) return today
     parsed.setDate(parsed.getDate() + 1)
-    const year = parsed.getFullYear()
-    const month = String(parsed.getMonth() + 1).padStart(2, '0')
-    const day = String(parsed.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
+    return toIsoDate(parsed)
   }, [booking.form.checkInDate, today])
   const totalPrice = useMemo(() => {
     if (!selectedRoom || !booking.form.checkInDate || !booking.form.checkOutDate) return null

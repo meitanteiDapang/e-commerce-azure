@@ -4,69 +4,48 @@ import { useAdminLogin } from './useAdminLogin'
 import { useGlobalContext } from '../context/globalContext'
 import './AdminShared.css'
 
-
-
-
-
 const AdminLogin = () => {
   const navigate = useNavigate()
+  const { state, globalDispatch } = useGlobalContext()
+  const token = state.adminToken
   const [username, setUsername] = useState<string>('admin')
   const [password, setPassword] = useState<string>('ps^word')
   const [errorText, setErrorText] = useState<string>('')
-  const { globalDispatch } = useGlobalContext()
-
-  const globalContext = useGlobalContext()
-  const token = globalContext.state.adminToken
-
-
   const adminLogin = useAdminLogin(username, password)
 
-
-
-
+  // On mount, if a token exists, verify and redirect without asking user to log in again.
   useEffect(() => {
-
-      const verifyToken = async (): Promise<boolean> =>{
-    if(!token){
-      return false
-    } else {
-      const tokenVerifed = await adminLogin.checkAdminToken(token);
-      return tokenVerifed
-    }
-
-  }
-
-    const run = async () => {
-      if (await verifyToken()) {
+    // If we already have a stored token, silently verify it and redirect.
+    // Doing this in the UI avoids an extra login for returning admins.
+    if (!token) return
+    let cancelled = false
+    const verify = async () => {
+      const valid = await adminLogin.checkAdminToken(token)
+      if (!cancelled && valid) {
         navigate('/admin')
       }
     }
-    run()
+    verify()
+    return () => {
+      cancelled = true
+    }
   }, [navigate, adminLogin, token])
-
-
-
-
-
-
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    // Do not clear any previous error until we know the result.
     const res = await adminLogin.submit()
     if (res.success) {
-      if (res.token){
+      if (res.token) {
         globalDispatch({ type: 'setAdminToken', token: res.token })
       } else {
         setErrorText('Token fetch failed, please try again later.')
         return
       }
-
-
       navigate('/admin')
     } else {
       setErrorText(res.message ?? 'Unknown error')
     }
-    
   }
 
   const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {

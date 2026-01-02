@@ -3,6 +3,20 @@ import { useGlobalContext } from '../context/globalContext'
 import { apiUrl } from '../apiClient'
 import type { AdminBooking } from './AdminPage'
 
+// Present room identity even when one of the pieces is missing.
+const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
+  if (roomTypeId != null && roomNumber != null) {
+    return `t${roomTypeId}-${roomNumber}`
+  }
+  if (roomTypeId != null) {
+    return `t${roomTypeId}-?`
+  }
+  if (roomNumber != null) {
+    return `t?-${roomNumber}`
+  }
+  return '-'
+}
+
 const BookingsTable = () => {
   const { state } = useGlobalContext()
   const token = state.adminToken
@@ -13,11 +27,13 @@ const BookingsTable = () => {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState<number | null>(null)
 
+  // Load bookings when token, scope, or page changes.
   useEffect(() => {
     if (!token) {
       return
     }
 
+    // Prevent state updates if the component unmounts mid-request.
     let isActive = true
     const load = async () => {
       try {
@@ -43,7 +59,9 @@ const BookingsTable = () => {
           return
         }
 
+        // API currently returns either an array or an object with { bookings, total }.
         const payload = data as { bookings?: unknown; total?: unknown } | unknown[]
+        // Normalise payload so the rest of the component can rely on arrays/numbers.
         const items = Array.isArray(payload)
           ? payload
           : Array.isArray((payload as { bookings?: unknown }).bookings)
@@ -75,19 +93,6 @@ const BookingsTable = () => {
       isActive = false
     }
   }, [token, showFutureOnly, page])
-
-  const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
-    if (roomTypeId != null && roomNumber != null) {
-      return `t${roomTypeId}-${roomNumber}`
-    }
-    if (roomTypeId != null) {
-      return `t${roomTypeId}-?`
-    }
-    if (roomNumber != null) {
-      return `t?-${roomNumber}`
-    }
-    return '-'
-  }
 
   if (!token) {
     return null

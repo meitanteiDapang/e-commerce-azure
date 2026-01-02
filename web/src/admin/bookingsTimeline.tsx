@@ -3,6 +3,8 @@ import { useGlobalContext } from '../context/globalContext'
 import { apiUrl } from '../apiClient'
 import type { AdminBooking } from './AdminPage'
 
+const TIMELINE_PAGE_SIZE = 500
+
 const LETTER_COLOR_MAP: Record<string, [string, string]> = {
   A: ['#f3b0c3', '#5a1032'],
   B: ['#f7c7a6', '#512400'],
@@ -34,6 +36,7 @@ const LETTER_COLOR_MAP: Record<string, [string, string]> = {
 
 const toDateKey = (date: Date) => date.toISOString().slice(0, 10)
 
+// Render a lightweight room label that matches the table format.
 const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
   if (roomTypeId != null && roomNumber != null) {
     return `t${roomTypeId}-${roomNumber}`
@@ -48,6 +51,7 @@ const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
 }
 
 const getNzYesterdayUtcDate = () => {
+  // Keep the UI anchored to NZ time: "yesterday" from Auckland, expressed as UTC date.
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Pacific/Auckland',
     year: 'numeric',
@@ -85,37 +89,66 @@ const BookingsTimeline = () => {
   const [bookings, setBookings] = useState<AdminBooking[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  // Cache NZ “yesterday” date key once so we can align the timeline headers.
   const yesterdayKey = useMemo(() => toDateKey(getNzYesterdayUtcDate()), [])
   const yesterdayHeaderRef = useRef<HTMLTableCellElement | null>(null)
 
+  // Load all bookings for the timeline when an admin token is present.
   useEffect(() => {
     if (!token) return
+    // Keep track of mounted state to avoid updating after unmount.
     let isActive = true
     const load = async () => {
       try {
-        const res = await fetch(apiUrl('/admin/loadBookings?scope=all'), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        let page = 1
+        let total: number | null = null
+        let all: AdminBooking[] = []
 
-        if (!isActive) return
+        while (true) {
+          const params = new URLSearchParams({
+            scope: 'all',
+            page: page.toString(),
+            pageSize: TIMELINE_PAGE_SIZE.toString(),
+          })
+          const res = await fetch(apiUrl(`/admin/loadBookings?${params.toString()}`), {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
 
-        const data = await res.json().catch(() => null)
-        if (!res.ok) {
-          const errorMessage = (data as { message?: string } | null)?.message ?? `HTTP ${res.status}`
-          setLoadError(errorMessage)
-          setBookings([])
-          return
+          if (!isActive) return
+
+          const data = await res.json().catch(() => null)
+          if (!res.ok) {
+            const errorMessage = (data as { message?: string } | null)?.message ?? `HTTP ${res.status}`
+            setLoadError(errorMessage)
+            setBookings([])
+            return
+          }
+
+          const payload = data as { bookings?: unknown; total?: unknown } | unknown[]
+          const items = Array.isArray(payload)
+            ? payload
+            : Array.isArray((payload as { bookings?: unknown }).bookings)
+              ? (payload as { bookings: unknown[] }).bookings
+              : []
+          const pageTotal =
+            !Array.isArray(payload) && typeof (payload as { total?: unknown }).total === 'number'
+              ? (payload as { total: number }).total
+              : null
+
+          all = all.concat(items as AdminBooking[])
+          total = total ?? pageTotal ?? null
+          // console.log('Bookings timeline loaded page', page, 'count', items.length, 'total', total)
+
+          const reachedTotal = total != null ? all.length >= total : items.length < TIMELINE_PAGE_SIZE
+          if (items.length === 0 || reachedTotal) {
+            break
+          }
+          page += 1
         }
 
-        const payload = data as { bookings?: unknown } | unknown[]
-        const items = Array.isArray(payload)
-          ? payload
-          : Array.isArray((payload as { bookings?: unknown }).bookings)
-            ? (payload as { bookings: unknown[] }).bookings
-            : []
-        setBookings(items as AdminBooking[])
+        setBookings(all)
         setLoadError(null)
       } catch (err) {
         if (!isActive) return
@@ -135,9 +168,11 @@ const BookingsTimeline = () => {
     }
   }, [token])
 
+  // Derive rooms list, date list, and a room-date grid from raw bookings.
   const { rooms, days, grid } = useMemo(() => {
     const roomSet = new Set<string>()
-    let minDate: Date | null = getNzYesterdayUtcDate()
+    // Start the view at NZ yesterday; grow the range based on actual bookings.
+    let minDate: Date = getNzYesterdayUtcDate()
     let maxDate: Date | null = null
     const occupancy = new Map<string, AdminBooking>()
 
@@ -157,6 +192,7 @@ const BookingsTimeline = () => {
       }
 
       let cursor = start
+      // Fill the grid map so every date between check-in and check-out has the booking reference.
       while (cursor <= end) {
         const key = `${roomLabel}|${toDateKey(cursor)}`
         occupancy.set(key, booking)
@@ -164,14 +200,19 @@ const BookingsTimeline = () => {
       }
     })
 
-    if (!minDate || !maxDate) {
+    // Debug: observe the latest date included in the computed range.
+    // console.log('Bookings timeline maxDate', maxDate?.toISOString())
+
+    if (!maxDate) {
       return { rooms: [], days: [], grid: new Map<string, AdminBooking>() }
     }
 
     const daysList: Date[] = []
-    let dayCursor = minDate
-    // todo: fix this
-    while (dayCursor <= maxDate) {
+    const endDate = maxDate
+    const startDate = minDate
+    let dayCursor = startDate
+
+    while (dayCursor <= endDate) {
       daysList.push(dayCursor)
       dayCursor = new Date(dayCursor.getTime() + 24 * 60 * 60 * 1000)
     }
@@ -179,6 +220,7 @@ const BookingsTimeline = () => {
     return { rooms: Array.from(roomSet.values()).sort(), days: daysList, grid: occupancy }
   }, [bookings])
 
+  // Auto-scroll horizontally so “yesterday” column is visible on mount/update.
   useEffect(() => {
     if (!scrollContainerRef.current || !yesterdayHeaderRef.current) return
     scrollContainerRef.current.scrollLeft = yesterdayHeaderRef.current.offsetLeft

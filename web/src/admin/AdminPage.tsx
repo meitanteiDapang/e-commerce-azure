@@ -19,22 +19,22 @@ export type AdminBooking = {
 
 const AdminPage = () => {
   const navigate = useNavigate()
-  const globalContext = useGlobalContext()
-  const token = globalContext.state.adminToken
+  const { state, globalDispatch } = useGlobalContext()
+  const token = state.adminToken
   const [activeTab, setActiveTab] = useState<'table' | 'timeline'>('table')
 
-
-  const logout = ()=>{
-    globalContext.globalDispatch({
-      type: 'clearAdminToken'
+  const logout = () => {
+    globalDispatch({
+      type: 'clearAdminToken',
     })
     navigate('/')
   }
 
-
-  useEffect(()=>{
+  // Redirect to login if token is missing; backend still enforces auth.
+  useEffect(() => {
+    // Guard the route client-side; the API still enforces auth server-side.
     if (!token) {
-      navigate("/adminLogin")
+      navigate('/adminLogin')
     }
   }, [token, navigate])
 
@@ -56,9 +56,11 @@ const AdminPage = () => {
               >
                 Back to home
               </button>
-              <button className="book-btn admin-flat-btn"
-               type="button"
-               onClick={logout}>
+              <button
+                className="book-btn admin-flat-btn"
+                type="button"
+                onClick={logout}
+              >
                 Logout
               </button>
             </div>

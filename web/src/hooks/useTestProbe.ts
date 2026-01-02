@@ -19,6 +19,7 @@ export const useTestProbe = (): TestProbeState => {
     const controller = new AbortController()
     const fetchTest = async () => {
       try {
+        // Build URL via URL to avoid manual string concatenation and keep types happy.
         const url = new URL(apiUrl('/test'), window.location.origin)
         url.searchParams.set('test_id', '123')
         const requestPayload = {
@@ -39,6 +40,7 @@ export const useTestProbe = (): TestProbeState => {
         setTestProbe({ loading: false, data, error: null })
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return
+        // Collapse unknown errors into a typed Error so UI can show message safely.
         const error = err instanceof Error ? err : new Error('Failed to contact test endpoint.')
         setTestProbe({ loading: false, data: null, error })
       }

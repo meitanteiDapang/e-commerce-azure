@@ -170,6 +170,7 @@ const BookingsTimeline = () => {
 
     const daysList: Date[] = []
     let dayCursor = minDate
+    // todo: fix this
     while (dayCursor <= maxDate) {
       daysList.push(dayCursor)
       dayCursor = new Date(dayCursor.getTime() + 24 * 60 * 60 * 1000)

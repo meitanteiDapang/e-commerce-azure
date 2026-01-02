@@ -21,15 +21,21 @@ public static class TestEndpoints
 
     public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/test", GetPublishEvent);
+        endpoints.MapPost("/test", GetPublishEvent);
         return endpoints;
     }
 
 
 
-    private static IResult GetPublishEvent()
+    private sealed record InputPayload(int input);
+
+    private static async Task<IResult> GetPublishEvent(HttpRequest req)
     {
         var sb = new StringBuilder();
+
+        var payload = await req.ReadFromJsonAsync<InputPayload>();
+        var inputValue = payload?.input ?? 0;
+
 
         // publish, event
         happySubscriber.Subscribe(happyPublisher);
@@ -53,6 +59,8 @@ public static class TestEndpoints
             out1 = happyDefferedList.Current;
         }
         sb.Append(out1.ToString());
+        sb.Append(" + ");
+        sb.Append((inputValue + 5).ToString());
 
         return Results.Ok(new
         {

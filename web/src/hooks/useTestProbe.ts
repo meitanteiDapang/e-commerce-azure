@@ -21,8 +21,19 @@ export const useTestProbe = (): TestProbeState => {
       try {
         const url = new URL(apiUrl('/test'), window.location.origin)
         url.searchParams.set('test_id', '123')
+        const requestPayload = {
+          input: 5,
+          timestamp: Date.now(),
+        }
 
-        const res = await fetch(url, { signal: controller.signal })
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestPayload),
+          signal: controller.signal,
+        })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data: TestProbeResponse = await res.json()
         setTestProbe({ loading: false, data, error: null })

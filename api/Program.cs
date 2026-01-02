@@ -26,39 +26,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 // cors
-var configuredOrigins = (builder.Configuration["AllowedOrigins"]
-        ?? builder.Configuration["ALLOWED_ORIGINS"])
-    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+var configuredOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
     ?? Array.Empty<string>();
 
-var defaultOrigins = new[]
+if (configuredOrigins.Length == 0)
 {
-    "https://dapang.live",
-    "https://www.dapang.live",
-    "http://localhost:5173",
-};
+    throw new InvalidOperationException("AllowedOrigins must contain at least one entry.");
+}
 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy
-            // Allow configured origins or any dapang.live subdomain to avoid CORS drift between www/api hosts.
-            .SetIsOriginAllowed(origin =>
-            {
-                if (configuredOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (defaultOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                return Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-                    && uri.Host.EndsWith(".dapang.live", StringComparison.OrdinalIgnoreCase);
-            })
+            .WithOrigins(configuredOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -66,8 +47,8 @@ builder.Services.AddCors(options =>
 
 
 // jwt
-
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "abcdefghijklmnopqrstuvwxyzdapangpp";
+var jwtSecret = builder.Configuration["Jwt:Secret"]??
+        "abcdefghijklmnopqrstuvwxyzdapangpp";
 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
 builder.Services

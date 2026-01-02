@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -19,6 +20,7 @@ public static class AdminLoginEndpoints
     private static IResult PostAdminLogin(
     string username,
     string password,
+    IConfiguration configuration,
     CancellationToken cancellationToken = default)
     {
         var requestUsername = username;
@@ -34,7 +36,9 @@ public static class AdminLoginEndpoints
                     statusCode: StatusCodes.Status401Unauthorized);
         }
 
-        var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? "abcdefghijklmnopqrstuvwxyzdapangpp";
+        var jwtSecret = configuration["Jwt:Secret"]
+            ?? configuration["JWT_SECRET"]
+            ?? "abcdefghijklmnopqrstuvwxyzdapangpp";
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         var signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 

@@ -14,6 +14,9 @@ const BookingSuccess = () => {
     roomTypeId !== null && Number.isFinite(roomTypeId)
       ? roomTypes.data.find((room) => room.id === roomTypeId) ?? null
       : null
+  const confirmationCopy = selectedRoom
+    ? `${selectedRoom.typeName} is booked. We will reach out with the final details.`
+    : 'We will reach out with the final details.'
 
   return (
     <div className="booking-page">
@@ -33,13 +36,7 @@ const BookingSuccess = () => {
 
       <div className="booking-card booking-success">
         <h2>Your reservation is locked in.</h2>
-        {selectedRoom ? (
-          <p className="subtext">
-            {selectedRoom.typeName} is booked. We will reach out with the final details.
-          </p>
-        ) : (
-          <p className="subtext">We will reach out with the final details.</p>
-        )}
+        <p className="subtext">{confirmationCopy}</p>
         <button className="book-btn primary" type="button" onClick={() => navigate('/')}>
           Back to homepage
         </button>

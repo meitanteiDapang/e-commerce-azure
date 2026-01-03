@@ -21,6 +21,77 @@ const HomePage = () => {
     navigate("/adminLogin");
   };
 
+  const heroMedia = heroImage ? (
+    <img
+      src={heroImage}
+      alt="Featured room"
+      className="frame-img"
+    />
+  ) : (
+    <div className="frame-img frame-fallback">Loading room...</div>
+  );
+
+  const roomCards = roomTypes.data.slice(0, 4).map((room) => (
+    <div className="highlight-card bright-card" key={room.id}>
+      <div className="img-wrap">
+        <img src={room.imageUrl} alt={room.typeName} />
+      </div>
+      <h3>{room.typeName}</h3>
+      <p>
+        {room.bedNumber} beds · ${room.price}
+      </p>
+      <div className="card-actions">
+        <button
+          className="book-btn"
+          type="button"
+          onClick={() => handleBook(room.id)}
+        >
+          Book
+        </button>
+      </div>
+    </div>
+  ));
+
+  let roomSectionContent: JSX.Element | null = null;
+  if (roomTypes.loading) {
+    roomSectionContent = <p className="subtext">Loading room types...</p>;
+  } else if (roomTypes.error) {
+    roomSectionContent = (
+      <p className="subtext error-text">
+        Failed to load room types: {roomTypes.error.message}
+      </p>
+    );
+  } else {
+    roomSectionContent = <div className="grid three">{roomCards}</div>;
+  }
+
+  const testProbeResult = (() => {
+    if (testProbe.loading) {
+      return <span className="pill">Contacting API...</span>;
+    }
+    if (testProbe.error) {
+      return (
+        <span className="pill error-pill">
+          Failed: {testProbe.error.message ?? "Unknown error"}
+        </span>
+      );
+    }
+    if (testProbe.data && !testProbe.error) {
+      const timestampNode = testProbe.data.timestamp ? (
+        <div className="pill-subtext">
+          {new Date(testProbe.data.timestamp).toLocaleString()}
+        </div>
+      ) : null;
+      return (
+        <div className="pill success-pill">
+          <div>{testProbe.data.message}</div>
+          {timestampNode}
+        </div>
+      );
+    }
+    return null;
+  })();
+
   return (
     <div className="page bright">
       <div className="glow glow-one" />
@@ -67,15 +138,7 @@ const HomePage = () => {
 
           <div className="hero-card hero-card-bright">
             <div className="frame-inner">
-              {heroImage ? (
-                <img
-                  src={heroImage}
-                  alt="Featured room"
-                  className="frame-img"
-                />
-              ) : (
-                <div className="frame-img frame-fallback">Loading room...</div>
-              )}
+              {heroMedia}
               <div className="frame-overlay">
                 <div className="frame-text">After-dark patrols</div>
                 <div className="frame-stats">
@@ -94,36 +157,7 @@ const HomePage = () => {
           <p className="eyebrow">Dapang manifesto</p>
           <h2>Book your stay now!</h2>
         </div>
-        {roomTypes.loading && <p className="subtext">Loading room types...</p>}
-        {roomTypes.error && (
-          <p className="subtext error-text">
-            Failed to load room types: {roomTypes.error.message}
-          </p>
-        )}
-        {!roomTypes.loading && !roomTypes.error && (
-          <div className="grid three">
-            {roomTypes.data.slice(0, 4).map((room) => (
-              <div className="highlight-card bright-card" key={room.id}>
-                <div className="img-wrap">
-                  <img src={room.imageUrl} alt={room.typeName} />
-                </div>
-                <h3>{room.typeName}</h3>
-                <p>
-                  {room.bedNumber} beds · ${room.price}
-                </p>
-                <div className="card-actions">
-                  <button
-                    className="book-btn"
-                    type="button"
-                    onClick={() => handleBook(room.id)}
-                  >
-                    Book
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {roomSectionContent}
       </section>
 
       <section className="section contact contact-bright">
@@ -155,24 +189,7 @@ const HomePage = () => {
             </p>
           </div>
           <div className="test-result">
-            {testProbe.loading && (
-              <span className="pill">Contacting API...</span>
-            )}
-            {testProbe.error && (
-              <span className="pill error-pill">
-                Failed: {testProbe.error.message ?? "Unknown error"}
-              </span>
-            )}
-            {testProbe.data && !testProbe.error && (
-              <div className="pill success-pill">
-                <div>{testProbe.data.message}</div>
-                {testProbe.data.timestamp && (
-                  <div className="pill-subtext">
-                    {new Date(testProbe.data.timestamp).toLocaleString()}
-                  </div>
-                )}
-              </div>
-            )}
+            {testProbeResult}
           </div>
         </div>
       </div>

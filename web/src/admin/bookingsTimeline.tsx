@@ -238,6 +238,61 @@ const BookingsTimeline = () => {
     return <p className="subtext">No bookings yet.</p>
   }
 
+  const captureYesterdayHeader = (el: HTMLTableCellElement | null) => {
+    yesterdayHeaderRef.current = el
+  }
+
+  const dateHeaders = days.map((day) => {
+    const key = toDateKey(day)
+    const isYesterday = key === yesterdayKey
+    return (
+      <th
+        key={key}
+        className="timeline-date-col"
+        ref={isYesterday ? captureYesterdayHeader : undefined}
+      >
+        {key}
+      </th>
+    )
+  })
+
+  const renderTimelineCell = (room: string, day: Date) => {
+    const dateKey = toDateKey(day)
+    const booking = grid.get(`${room}|${dateKey}`)
+    const guestInitial =
+      booking?.guestName && booking.guestName.trim().length > 0
+        ? booking.guestName.trim()[0]!.toUpperCase()
+        : null
+    const colors = guestInitial ? LETTER_COLOR_MAP[guestInitial] : undefined
+    return (
+      <td
+        key={`${room}-${dateKey}`}
+        className="timeline-cell"
+        style={
+          colors
+            ? {
+                backgroundColor: colors[0],
+                color: colors[1],
+                fontWeight: 700,
+              }
+            : undefined
+        }
+      >
+        {booking ? booking.guestName ?? '-' : ''}
+      </td>
+    )
+  }
+
+  const timelineRows = rooms.map((room) => {
+    const cells = days.map((day) => renderTimelineCell(room, day))
+    return (
+      <tr key={room}>
+        <td className="timeline-room-col">{room}</td>
+        {cells}
+      </tr>
+    )
+  })
+
   return (
     <div className="admin-timeline">
       <div className="admin-timeline-scroll" ref={scrollContainerRef}>
@@ -245,53 +300,11 @@ const BookingsTimeline = () => {
           <thead>
             <tr>
               <th className="timeline-room-col">Room</th>
-              {days.map((day) => {
-                const key = toDateKey(day)
-                const isYesterday = key === yesterdayKey
-                return (
-                  <th
-                    key={key}
-                    className="timeline-date-col"
-                    ref={isYesterday ? (el) => { yesterdayHeaderRef.current = el } : undefined}
-                  >
-                    {key}
-                  </th>
-                )
-              })}
+              {dateHeaders}
             </tr>
           </thead>
           <tbody>
-            {rooms.map((room) => (
-              <tr key={room}>
-                <td className="timeline-room-col">{room}</td>
-                {days.map((day) => {
-                  const dateKey = toDateKey(day)
-                  const booking = grid.get(`${room}|${dateKey}`)
-                  const guestInitial =
-                    booking?.guestName && booking.guestName.trim().length > 0
-                      ? booking.guestName.trim()[0]!.toUpperCase()
-                      : null
-                  const colors = guestInitial ? LETTER_COLOR_MAP[guestInitial] : undefined
-                  return (
-                    <td
-                      key={`${room}-${dateKey}`}
-                      className="timeline-cell"
-                      style={
-                        colors
-                          ? {
-                              backgroundColor: colors[0],
-                              color: colors[1],
-                              fontWeight: 700,
-                            }
-                          : undefined
-                      }
-                    >
-                      {booking ? booking.guestName ?? '-' : ''}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
+            {timelineRows}
           </tbody>
         </table>
       </div>

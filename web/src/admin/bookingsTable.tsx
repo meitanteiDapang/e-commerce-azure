@@ -98,6 +98,67 @@ const BookingsTable = () => {
     return null
   }
 
+  const toggleLabel = showFutureOnly ? 'Show all' : 'Show future'
+  const pageCount = total != null ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null
+  const isNextDisabled = total != null ? page * PAGE_SIZE >= total : bookings.length < PAGE_SIZE
+
+  const bookingRows = bookings.map((booking, index) => (
+    <tr key={booking.id ?? `${booking.guestEmail ?? 'booking'}-${index}`}>
+      <td>{booking.id ?? '-'}</td>
+      <td>{formatRoomLabel(booking.roomTypeId, booking.roomNumber)}</td>
+      <td>{booking.checkInDate ?? '-'}</td>
+      <td>{booking.checkOutDate ?? '-'}</td>
+      <td>{booking.guestName ?? '-'}</td>
+      <td>{booking.guestEmail ?? '-'}</td>
+      <td>{booking.guestPhone ?? '-'}</td>
+      <td className="admin-action-cell">
+        <details className="admin-action-menu">
+          <summary className="admin-action-trigger"></summary>
+          <div className="admin-action-dropdown">
+            <button
+              className="admin-action-item"
+              type="button"
+              onClick={(event) => {
+                console.log('delete booking id:', booking.id ?? '-')
+                const details = event.currentTarget.closest('details')
+                if (details) {
+                  details.removeAttribute('open')
+                }
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </details>
+      </td>
+    </tr>
+  ))
+
+  let bookingsContent: JSX.Element | null
+  if (loadError) {
+    bookingsContent = <p className="subtext">{loadError}</p>
+  } else if (bookings.length === 0) {
+    bookingsContent = <p className="subtext">No bookings yet.</p>
+  } else {
+    bookingsContent = (
+      <table className="admin-bookings">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Room</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>{bookingRows}</tbody>
+      </table>
+    )
+  }
+
   return (
     <>
       <div className="admin-secondary-row">
@@ -109,63 +170,11 @@ const BookingsTable = () => {
             setShowFutureOnly((prev) => !prev)
           }}
         >
-          {showFutureOnly ? 'Show all' : 'Show future'}
+          {toggleLabel}
         </button>
       </div>
       <div>
-        {loadError ? (
-          <p className="subtext">{loadError}</p>
-        ) : bookings.length === 0 ? (
-          <p className="subtext">No bookings yet.</p>
-        ) : (
-          <table className="admin-bookings">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Room</th>
-                <th>Check-in</th>
-                <th>Check-out</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((booking, index) => (
-                <tr key={booking.id ?? `${booking.guestEmail ?? 'booking'}-${index}`}>
-                  <td>{booking.id ?? '-'}</td>
-                  <td>{formatRoomLabel(booking.roomTypeId, booking.roomNumber)}</td>
-                  <td>{booking.checkInDate ?? '-'}</td>
-                  <td>{booking.checkOutDate ?? '-'}</td>
-                  <td>{booking.guestName ?? '-'}</td>
-                  <td>{booking.guestEmail ?? '-'}</td>
-                  <td>{booking.guestPhone ?? '-'}</td>
-                  <td className="admin-action-cell">
-                    <details className="admin-action-menu">
-                      <summary className="admin-action-trigger"></summary>
-                      <div className="admin-action-dropdown">
-                        <button
-                          className="admin-action-item"
-                          type="button"
-                          onClick={(event) => {
-                            console.log('delete booking id:', booking.id ?? '-')
-                            const details = event.currentTarget.closest('details')
-                            if (details) {
-                              details.removeAttribute('open')
-                            }
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </details>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        {bookingsContent}
       </div>
       <div className="admin-pagination">
         <button
@@ -178,12 +187,12 @@ const BookingsTable = () => {
         </button>
         <span className="admin-page-info">
           Page {page}
-          {total != null ? ` / ${Math.max(1, Math.ceil(total / PAGE_SIZE))}` : ''}
+          {pageCount != null ? ` / ${pageCount}` : ''}
         </span>
         <button
           className="book-btn admin-flat-btn"
           type="button"
-          disabled={total != null ? page * PAGE_SIZE >= total : bookings.length < PAGE_SIZE}
+          disabled={isNextDisabled}
           onClick={() => setPage((prev) => prev + 1)}
         >
           Next

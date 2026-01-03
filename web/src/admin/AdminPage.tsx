@@ -30,6 +30,10 @@ const AdminPage = () => {
     navigate('/')
   }
 
+  const tableTabClass = `admin-tab-btn ${activeTab === 'table' ? 'is-active' : ''}`
+  const timelineTabClass = `admin-tab-btn ${activeTab === 'timeline' ? 'is-active' : ''}`
+  const tabPanel = activeTab === 'table' ? <BookingsTable /> : <BookingsTimeline />
+
   // Redirect to login if token is missing; backend still enforces auth.
   useEffect(() => {
     // Guard the route client-side; the API still enforces auth server-side.
@@ -37,6 +41,28 @@ const AdminPage = () => {
       navigate('/adminLogin')
     }
   }, [token, navigate])
+
+  const adminContent = token ? (
+    <>
+      <div className="admin-tabs">
+        <button
+          type="button"
+          className={tableTabClass}
+          onClick={() => setActiveTab('table')}
+        >
+          Bookings Table
+        </button>
+        <button
+          type="button"
+          className={timelineTabClass}
+          onClick={() => setActiveTab('timeline')}
+        >
+          Bookings Timeline
+        </button>
+      </div>
+      <div className="admin-tab-panel">{tabPanel}</div>
+    </>
+  ) : null
 
   return (
     <div className="page bright admin-page">
@@ -65,30 +91,7 @@ const AdminPage = () => {
               </button>
             </div>
           </div>
-          {token ? (
-            <>
-              <div className="admin-tabs">
-                <button
-                  type="button"
-                  className={`admin-tab-btn ${activeTab === 'table' ? 'is-active' : ''}`}
-                  onClick={() => setActiveTab('table')}
-                >
-                  Bookings Table
-                </button>
-                <button
-                  type="button"
-                  className={`admin-tab-btn ${activeTab === 'timeline' ? 'is-active' : ''}`}
-                  onClick={() => setActiveTab('timeline')}
-                >
-                  Bookings Timeline
-                </button>
-              </div>
-              <div className="admin-tab-panel">
-                {activeTab === 'table' && <BookingsTable />}
-                {activeTab === 'timeline' && <BookingsTimeline />}
-              </div>
-            </>
-          ) : null}
+          {adminContent}
         </div>
       </div>
     </div>

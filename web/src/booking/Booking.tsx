@@ -83,6 +83,142 @@ const Booking = () => {
     }
   }
 
+  const totalPriceText = totalPrice
+    ? `Total: $${totalPrice.total} (${totalPrice.nights} night${totalPrice.nights === 1 ? '' : 's'})`
+    : null
+  const totalPriceNode = totalPriceText ? <p className="subtext total-price">{totalPriceText}</p> : null
+  const availabilityContent = (() => {
+    if (!booking.form.checkInDate || !booking.form.checkOutDate) {
+      return <span>Select check-in and check-out dates to check availability.</span>
+    }
+    if (booking.checking) {
+      return <span>Checking availability...</span>
+    }
+    if (booking.availabilityError) {
+      return <span className="error-text">{booking.availabilityError}</span>
+    }
+    if (booking.availability && !booking.checking && !booking.availabilityError) {
+      return (
+        <span className={booking.availability.available ? 'availability-ok' : 'availability-bad'}>
+          {booking.availability.available
+            ? `${booking.availability.remaining} rooms left`
+            : 'Sold out for these dates.'}
+        </span>
+      )
+    }
+    return null
+  })()
+  const errorNode =
+    booking.error || localError ? (
+      <p className="subtext error-text">{booking.error || localError}</p>
+    ) : null
+  const successNode = booking.success ? <p className="subtext success-text">{booking.success}</p> : null
+  const bookingButtonText = booking.submitting ? 'Booking...' : 'Confirm booking'
+  const bookingButtonDisabled =
+    booking.submitting ||
+    booking.checking ||
+    !booking.form.checkInDate ||
+    !booking.form.checkOutDate ||
+    booking.availability?.available === false
+
+  let bookingCardContent: JSX.Element
+  if (roomTypes.loading) {
+    bookingCardContent = <p className="subtext">Loading room details...</p>
+  } else if (roomTypes.error) {
+    bookingCardContent = (
+      <p className="subtext error-text">Failed to load room details: {roomTypes.error.message}</p>
+    )
+  } else if (!selectedRoom) {
+    bookingCardContent = <p className="subtext">Room type not found. Please go back and try again.</p>
+  } else {
+    bookingCardContent = (
+      <div className="booking-grid">
+        <div className="booking-summary">
+          <div className="img-wrap square">
+            <img src={selectedRoom.imageUrl} alt={selectedRoom.typeName} />
+          </div>
+          <h2>{selectedRoom.typeName}</h2>
+          <p>
+            {selectedRoom.bedNumber} beds · ${selectedRoom.price}
+          </p>
+          <p className="subtext">
+            Pick your check-in and check-out dates and leave your contact details. We will hold the
+            room after booking.
+          </p>
+        </div>
+
+        <div className="booking-form">
+          <div className="field-group">
+            <label className="field">
+              <span>Check-in</span>
+              <input
+                type="date"
+                value={booking.form.checkInDate}
+                min={today}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  booking.setField('checkInDate', event.target.value)
+                }
+              />
+            </label>
+            <label className="field">
+              <span>Check-out</span>
+              <input
+                type="date"
+                value={booking.form.checkOutDate}
+                min={minCheckOutDate}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  booking.setField('checkOutDate', event.target.value)
+                }
+              />
+            </label>
+          </div>
+          <label className="field">
+            <span>Name</span>
+            <input
+              type="text"
+              value={booking.form.name}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => booking.setField('name', event.target.value)}
+              placeholder="Your full name"
+            />
+          </label>
+          <label className="field">
+            <span>Email</span>
+            <input
+              type="email"
+              value={booking.form.email}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => booking.setField('email', event.target.value)}
+              placeholder="you@example.com"
+            />
+          </label>
+          <label className="field">
+            <span>Phone</span>
+            <input
+              type="tel"
+              value={booking.form.phone}
+              inputMode="tel"
+              pattern="[+0-9]*"
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                booking.setField('phone', sanitizePhone(event.target.value))
+              }
+              placeholder="11 111 1111"
+            />
+          </label>
+
+          {totalPriceNode}
+
+          <div className="availability">{availabilityContent}</div>
+
+          {errorNode}
+          {successNode}
+
+          <button className="book-btn primary" type="button" onClick={handleSubmit} disabled={bookingButtonDisabled}>
+            {bookingButtonText}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="booking-page">
       <div className="booking-header">
@@ -100,138 +236,7 @@ const Booking = () => {
       </div>
 
       <div className="booking-card">
-        {roomTypes.loading && <p className="subtext">Loading room details...</p>}
-        {roomTypes.error && (
-          <p className="subtext error-text">Failed to load room details: {roomTypes.error.message}</p>
-        )}
-        {!roomTypes.loading && !roomTypes.error && !selectedRoom && (
-          <p className="subtext">Room type not found. Please go back and try again.</p>
-        )}
-        {!roomTypes.loading && !roomTypes.error && selectedRoom && (
-          <div className="booking-grid">
-            <div className="booking-summary">
-              <div className="img-wrap square">
-                <img src={selectedRoom.imageUrl} alt={selectedRoom.typeName} />
-              </div>
-              <h2>{selectedRoom.typeName}</h2>
-              <p>
-                {selectedRoom.bedNumber} beds · ${selectedRoom.price}
-              </p>
-              <p className="subtext">
-                Pick your check-in and check-out dates and leave your contact details. We will
-                hold the room after booking.
-              </p>
-            </div>
-
-            <div className="booking-form">
-              <div className="field-group">
-                <label className="field">
-                  <span>Check-in</span>
-                  <input
-                    type="date"
-                    value={booking.form.checkInDate}
-                    min={today}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      booking.setField('checkInDate', event.target.value)
-                    }
-                  />
-                </label>
-                <label className="field">
-                  <span>Check-out</span>
-                  <input
-                    type="date"
-                    value={booking.form.checkOutDate}
-                    min={minCheckOutDate}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      booking.setField('checkOutDate', event.target.value)
-                    }
-                  />
-                </label>
-              </div>
-              <label className="field">
-                <span>Name</span>
-                <input
-                  type="text"
-                  value={booking.form.name}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    booking.setField('name', event.target.value)
-                  }
-                  placeholder="Your full name"
-                />
-              </label>
-              <label className="field">
-                <span>Email</span>
-                <input
-                  type="email"
-                  value={booking.form.email}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    booking.setField('email', event.target.value)
-                  }
-                  placeholder="you@example.com"
-                />
-              </label>
-              <label className="field">
-                <span>Phone</span>
-                <input
-                  type="tel"
-                  value={booking.form.phone}
-                  inputMode="tel"
-                  pattern="[+0-9]*"
-                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    booking.setField('phone', sanitizePhone(event.target.value))
-                  }
-                  placeholder="11 111 1111"
-                />
-              </label>
-
-              {totalPrice && (
-                <p className="subtext total-price">
-                  Total: ${totalPrice.total} ({totalPrice.nights} night
-                  {totalPrice.nights === 1 ? '' : 's'})
-                </p>
-              )}
-
-              <div className="availability">
-                {(!booking.form.checkInDate || !booking.form.checkOutDate) && (
-                  <span>Select check-in and check-out dates to check availability.</span>
-                )}
-                {booking.checking && <span>Checking availability...</span>}
-                {booking.availabilityError && (
-                  <span className="error-text">{booking.availabilityError}</span>
-                )}
-                {booking.availability && !booking.checking && !booking.availabilityError && (
-                  <span
-                    className={
-                      booking.availability.available ? 'availability-ok' : 'availability-bad'
-                    }
-                  >
-                    {booking.availability.available
-                      ? `${booking.availability.remaining} rooms left`
-                      : 'Sold out for these dates.'}
-                  </span>
-                )}
-              </div>
-
-              {(booking.error || localError) && <p className="subtext error-text">{booking.error || localError}</p>}
-              {booking.success && <p className="subtext success-text">{booking.success}</p>}
-
-              <button
-                className="book-btn primary"
-                type="button"
-                onClick={handleSubmit}
-                disabled={
-                  booking.submitting ||
-                  booking.checking ||
-                  !booking.form.checkInDate ||
-                  !booking.form.checkOutDate ||
-                  booking.availability?.available === false
-                }
-              >
-                {booking.submitting ? 'Booking...' : 'Confirm booking'}
-              </button>
-            </div>
-          </div>
-        )}
+        {bookingCardContent}
       </div>
     </div>
   )

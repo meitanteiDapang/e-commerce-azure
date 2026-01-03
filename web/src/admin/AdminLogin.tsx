@@ -60,6 +60,12 @@ const AdminLogin = () => {
     navigate('/')
   }
 
+  const errorNode = errorText ? (
+    <p className="subtext" style={{ color: 'red' }}>
+      {errorText}
+    </p>
+  ) : null
+
   return (
     <div className="page bright admin-page">
       <div className="glow glow-one" />
@@ -72,11 +78,7 @@ const AdminLogin = () => {
             <p className="subtext">
               Enter your credentials to reach the admin console.
             </p>
-            {errorText && (
-              <p className="subtext" style={{ color: 'red' }}>
-                {errorText}
-              </p>
-            )}
+            {errorNode}
           </div>
           <form className="auth-form" onSubmit={handleSubmit}>
             <label className="field">

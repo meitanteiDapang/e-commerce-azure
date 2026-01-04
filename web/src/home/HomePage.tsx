@@ -19,6 +19,7 @@ const HomePage = () => {
 
   const handleAdminEntry = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    // Use push so Back returns to homepage after login.
     navigate("/adminLogin");
   };
 

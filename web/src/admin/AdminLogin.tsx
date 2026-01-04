@@ -42,7 +42,8 @@ const AdminLogin = () => {
         setErrorText('Token fetch failed, please try again later.')
         return
       }
-      navigate('/admin')
+      // Replace to avoid stacking login page in history after redirect.
+      navigate('/admin', { replace: true })
     } else {
       setErrorText(res.message ?? 'Unknown error')
     }

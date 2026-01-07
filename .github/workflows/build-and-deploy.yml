@@ -1,4 +1,4 @@
-name: Build & Deploy Web to AKS (dev)
+name: Build & Deploy UI + API to AKS (dev)
 
 on:
   workflow_dispatch:
@@ -6,6 +6,7 @@ on:
     branches: ["main"]
     paths:
       - "web/**"
+      - "front/**"
       - "api/**"
       - "helm/**"
       - ".github/workflows/build-and-deploy.yml"
@@ -22,6 +23,7 @@ env:
   CHART_PATH: ./helm/ecommerce
   ACR_NAME: acrecommercedev629
   IMAGE_NAME: web
+  FRONT_IMAGE_NAME: front
   API_IMAGE_NAME: api
 
 jobs:
@@ -61,7 +63,19 @@ jobs:
 
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:${IMAGE_TAG}
 
-      # 5b. build & push API image
+      # 5b. build & push Angular front image
+      - name: Build and push front image
+        run: |
+          ACR_LOGIN_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
+          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER"
+
+          docker build \
+            -t $ACR_LOGIN_SERVER/$FRONT_IMAGE_NAME:${IMAGE_TAG} \
+            ./front
+
+          docker push $ACR_LOGIN_SERVER/$FRONT_IMAGE_NAME:${IMAGE_TAG}
+
+      # 5c. build & push API image
       - name: Build and push API image
         run: |
           ACR_LOGIN_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
@@ -87,6 +101,8 @@ jobs:
             --namespace $NAMESPACE \
             --create-namespace \
             --set web.image.tag=${IMAGE_TAG} \
+            --set front.image.tag=${IMAGE_TAG} \
+            --set ui.target=front \
             --set api.image.tag=${IMAGE_TAG}
 
       # 8. show status

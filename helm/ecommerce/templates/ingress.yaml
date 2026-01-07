@@ -1,11 +1,18 @@
 {{- if .Values.ingress.enabled }}
-{{- $uiTarget := default "front" .Values.ui.target | lower }}
-{{- $uiService := printf "%s-%s" .Release.Name $uiTarget }}
-{{- $uiPort := ternary .Values.front.servicePort .Values.web.servicePort (eq $uiTarget "front") }}
+{{- $tlsHosts := list }}
+{{- if and .Values.front.enabled .Values.ingress.host }}
+  {{- $tlsHosts = append $tlsHosts .Values.ingress.host }}
+{{- end }}
+{{- if and .Values.web.enabled .Values.web.host }}
+  {{- $tlsHosts = append $tlsHosts .Values.web.host }}
+{{- end }}
+{{- if .Values.ingress.apiHost }}
+  {{- $tlsHosts = append $tlsHosts .Values.ingress.apiHost }}
+{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-web
+  name: {{ .Release.Name }}-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
     {{- if .Values.certManager.enabled }}
@@ -17,14 +24,16 @@ metadata:
     {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
-  {{- if and .Values.ingress.host .Values.ingress.tls.enabled }}
+  {{- if and .Values.ingress.tls.enabled (gt (len $tlsHosts) 0) }}
   tls:
     - hosts:
-        - {{ .Values.ingress.host | quote }}
+        {{- range $tlsHosts }}
+        - {{ . | quote }}
+        {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | quote }}
   {{- end }}
   rules:
-    {{- if .Values.ingress.host }}
+    {{- if and .Values.front.enabled .Values.ingress.host }}
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
@@ -32,55 +41,28 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ $uiService }}
+                name: {{ .Release.Name }}-front
                 port:
-                  number: {{ $uiPort }}
-    {{- end }}
-    # Catch-all rule so ingress IP works without Host header
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ $uiService }}
-                port:
-                  number: {{ $uiPort }}
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-api
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    {{- if .Values.certManager.enabled }}
-    cert-manager.io/cluster-issuer: {{ .Values.certManager.clusterIssuerName | quote }}
-    {{- end }}
-spec:
-  ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
-  {{- if and (or .Values.ingress.host .Values.ingress.apiHost) .Values.ingress.tls.enabled }}
-  tls:
-    - hosts:
-        {{- if .Values.ingress.host }}
-        - {{ .Values.ingress.host | quote }}
-        {{- end }}
-        {{- if .Values.ingress.apiHost }}
-        - {{ .Values.ingress.apiHost | quote }}
-        {{- end }}
-      secretName: {{ .Values.ingress.tls.secretName | quote }}
-  {{- end }}
-  rules:
-    {{- if .Values.ingress.host }}
-    - host: {{ .Values.ingress.host | quote }}
-      http:
-        paths:
+                  number: {{ .Values.front.servicePort }}
           - path: /api
             pathType: Prefix
             backend:
               service:
                 name: {{ .Release.Name }}-api
                 port:
-                  number: 80
+                  number: {{ .Values.api.servicePort }}
+    {{- end }}
+    {{- if and .Values.web.enabled .Values.web.host }}
+    - host: {{ .Values.web.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-web
+                port:
+                  number: {{ .Values.web.servicePort }}
     {{- end }}
     {{- if .Values.ingress.apiHost }}
     - host: {{ .Values.ingress.apiHost | quote }}
@@ -92,16 +74,6 @@ spec:
               service:
                 name: {{ .Release.Name }}-api
                 port:
-                  number: 80
+                  number: {{ .Values.api.servicePort }}
     {{- end }}
-    # Catch-all rule so ingress IP works without Host header
-    - http:
-        paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-api
-                port:
-                  number: 80
 {{- end }}

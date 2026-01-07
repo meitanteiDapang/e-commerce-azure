@@ -102,8 +102,7 @@ jobs:
             --create-namespace \
             --set front.image.tag=${IMAGE_TAG} \
             --set web.image.tag=${IMAGE_TAG} \
-            --set api.image.tag=${IMAGE_TAG} \
-            --set ui.target=both
+            --set api.image.tag=${IMAGE_TAG}
 
       # 8. show status
       - name: Show status

@@ -1,7 +1,5 @@
-ui:
-  target: both
-
 front:
+  enabled: true
   servicePort: 80
   image:
     repository: acrecommercedev629.azurecr.io/front
@@ -9,6 +7,7 @@ front:
     pullPolicy: IfNotPresent
 
 web:
+  enabled: true
   servicePort: 80
   image:
     repository: acrecommercedev629.azurecr.io/web
@@ -26,7 +25,6 @@ api:
     - https://dapang.live
     - https://www.dapang.live
     - https://react.dapang.live
-    - http://localhost:5173
 
 postgres:
   image:

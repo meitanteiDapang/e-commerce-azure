@@ -1,6 +1,5 @@
-{{- $uiTarget := default "both" .Values.ui.target | lower }}
-{{- $deployFront := or (eq $uiTarget "front") (eq $uiTarget "both") }}
-{{- $deployWeb := or (eq $uiTarget "web") (eq $uiTarget "both") }}
+{{- $deployFront := default true .Values.front.enabled }}
+{{- $deployWeb := default true .Values.web.enabled }}
 {{- if $deployFront }}
 apiVersion: apps/v1
 kind: Deployment

@@ -1,5 +1,7 @@
-{{- $uiTarget := default "front" .Values.ui.target | lower }}
-{{- if eq $uiTarget "front" }}
+{{- $uiTarget := default "both" .Values.ui.target | lower }}
+{{- $deployFront := or (eq $uiTarget "front") (eq $uiTarget "both") }}
+{{- $deployWeb := or (eq $uiTarget "web") (eq $uiTarget "both") }}
+{{- if $deployFront }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,7 +14,13 @@ spec:
     - name: http
       port: {{ .Values.front.servicePort }}
       targetPort: 80
-{{- else if eq $uiTarget "web" }}
+{{- end }}
+
+{{- if and $deployFront $deployWeb }}
+---
+{{- end }}
+
+{{- if $deployWeb }}
 apiVersion: v1
 kind: Service
 metadata:

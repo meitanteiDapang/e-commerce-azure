@@ -1,5 +1,5 @@
 ui:
-  target: front
+  target: both
 
 front:
   servicePort: 80
@@ -15,7 +15,6 @@ web:
     tag: dev-latest
     pullPolicy: IfNotPresent
 
-
 api:
   servicePort: 80
   containerPort: 8080
@@ -26,6 +25,7 @@ api:
   allowedOrigins:
     - https://dapang.live
     - https://www.dapang.live
+    - https://react.dapang.live
     - http://localhost:5173
 
 postgres:
@@ -53,6 +53,8 @@ ingress:
   enabled: true
   className: nginx
   host: dapang.live
+  frontHost: dapang.live
+  webHost: react.dapang.live
   apiHost: api.dapang.live
   enableConfigurationSnippet: false
   tls:

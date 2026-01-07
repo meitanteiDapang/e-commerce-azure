@@ -1,7 +1,24 @@
 {{- if .Values.ingress.enabled }}
-{{- $uiTarget := default "front" .Values.ui.target | lower }}
-{{- $uiService := printf "%s-%s" .Release.Name $uiTarget }}
-{{- $uiPort := ternary .Values.front.servicePort .Values.web.servicePort (eq $uiTarget "front") }}
+{{- $uiTarget := default "both" .Values.ui.target | lower }}
+{{- $frontEnabled := or (eq $uiTarget "front") (eq $uiTarget "both") }}
+{{- $webEnabled := or (eq $uiTarget "web") (eq $uiTarget "both") }}
+{{- $frontHost := default .Values.ingress.host .Values.ingress.frontHost }}
+{{- $webHost := .Values.ingress.webHost }}
+{{- $apiHost := .Values.ingress.apiHost }}
+{{- $tlsHosts := list }}
+{{- if $frontHost }}{{- $tlsHosts = append $tlsHosts $frontHost }}{{- end }}
+{{- if and $webHost $webEnabled }}{{- $tlsHosts = append $tlsHosts $webHost }}{{- end }}
+{{- if $apiHost }}{{- $tlsHosts = append $tlsHosts $apiHost }}{{- end }}
+{{- $tlsHosts = uniq $tlsHosts }}
+{{- $catchAllService := "" }}
+{{- $catchAllPort := 80 }}
+{{- if $frontEnabled }}
+  {{- $catchAllService = printf "%s-front" .Release.Name }}
+  {{- $catchAllPort = .Values.front.servicePort }}
+{{- else if $webEnabled }}
+  {{- $catchAllService = printf "%s-web" .Release.Name }}
+  {{- $catchAllPort = .Values.web.servicePort }}
+{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -17,25 +34,40 @@ metadata:
     {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
-  {{- if and .Values.ingress.host .Values.ingress.tls.enabled }}
+  {{- if and (gt (len $tlsHosts) 0) .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - {{ .Values.ingress.host | quote }}
+        {{- range $tlsHosts }}
+        - {{ . | quote }}
+        {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | quote }}
   {{- end }}
   rules:
-    {{- if .Values.ingress.host }}
-    - host: {{ .Values.ingress.host | quote }}
+    {{- if and $frontEnabled $frontHost }}
+    - host: {{ $frontHost | quote }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ $uiService }}
+                name: {{ printf "%s-front" .Release.Name }}
                 port:
-                  number: {{ $uiPort }}
+                  number: {{ .Values.front.servicePort }}
     {{- end }}
+    {{- if and $webEnabled $webHost }}
+    - host: {{ $webHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ printf "%s-web" .Release.Name }}
+                port:
+                  number: {{ .Values.web.servicePort }}
+    {{- end }}
+    {{- if $catchAllService }}
     # Catch-all rule so ingress IP works without Host header
     - http:
         paths:
@@ -43,9 +75,10 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ $uiService }}
+                name: {{ $catchAllService }}
                 port:
-                  number: {{ $uiPort }}
+                  number: {{ $catchAllPort }}
+    {{- end }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -58,20 +91,17 @@ metadata:
     {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className | default "nginx" | quote }}
-  {{- if and (or .Values.ingress.host .Values.ingress.apiHost) .Values.ingress.tls.enabled }}
+  {{- if and (gt (len $tlsHosts) 0) .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        {{- if .Values.ingress.host }}
-        - {{ .Values.ingress.host | quote }}
-        {{- end }}
-        {{- if .Values.ingress.apiHost }}
-        - {{ .Values.ingress.apiHost | quote }}
+        {{- range $tlsHosts }}
+        - {{ . | quote }}
         {{- end }}
       secretName: {{ .Values.ingress.tls.secretName | quote }}
   {{- end }}
   rules:
-    {{- if .Values.ingress.host }}
-    - host: {{ .Values.ingress.host | quote }}
+    {{- if $frontHost }}
+    - host: {{ $frontHost | quote }}
       http:
         paths:
           - path: /api
@@ -80,10 +110,22 @@ spec:
               service:
                 name: {{ .Release.Name }}-api
                 port:
-                  number: 80
+                  number: {{ .Values.api.servicePort }}
     {{- end }}
-    {{- if .Values.ingress.apiHost }}
-    - host: {{ .Values.ingress.apiHost | quote }}
+    {{- if and $webHost $webEnabled }}
+    - host: {{ $webHost | quote }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-api
+                port:
+                  number: {{ .Values.api.servicePort }}
+    {{- end }}
+    {{- if $apiHost }}
+    - host: {{ $apiHost | quote }}
       http:
         paths:
           - path: /
@@ -92,7 +134,7 @@ spec:
               service:
                 name: {{ .Release.Name }}-api
                 port:
-                  number: 80
+                  number: {{ .Values.api.servicePort }}
     {{- end }}
     # Catch-all rule so ingress IP works without Host header
     - http:
@@ -103,5 +145,5 @@ spec:
               service:
                 name: {{ .Release.Name }}-api
                 port:
-                  number: 80
+                  number: {{ .Values.api.servicePort }}
 {{- end }}

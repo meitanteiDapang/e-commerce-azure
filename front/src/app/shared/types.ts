@@ -17,11 +17,6 @@ export interface BookingResult {
   roomNumber?: number;
 }
 
-export interface TestProbeResponse {
-  message: string;
-  timestamp?: string;
-}
-
 export interface AdminBooking {
   id?: number;
   roomTypeId?: number;

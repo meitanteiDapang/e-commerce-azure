@@ -1,0 +1,36 @@
+.contact-card {
+  border: 1px solid rgba(15, 22, 38, 0.08);
+  border-radius: 24px;
+  background: linear-gradient(160deg, #fff8f0 0%, #fff2ff 60%, #eaf6ff 100%);
+  padding: clamp(20px, 5vw, 32px);
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: clamp(18px, 4vw, 28px);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.12);
+}
+
+.contact-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: #243447;
+  margin: 0 0 4px;
+}
+
+.value {
+  margin: 0;
+  color: #0f1626;
+  font-weight: 800;
+}
+
+@media (max-width: 1024px) {
+  .contact-card {
+    grid-template-columns: 1fr;
+  }
+}

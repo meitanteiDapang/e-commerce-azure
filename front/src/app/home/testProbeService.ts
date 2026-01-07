@@ -1,14 +1,8 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, EMPTY, tap } from 'rxjs';
-import { ApiClientService } from './apiClientService';
-import { TestProbeResponse } from './types';
-
-interface TestProbeState {
-  loading: boolean;
-  data: TestProbeResponse | null;
-  error: string | null;
-}
+import { ApiClientService } from '../shared/apiClientService';
+import { TestProbeResponse, TestProbeState } from './testProbeTypes';
 
 @Injectable({ providedIn: 'root' })
 export class TestProbeService {

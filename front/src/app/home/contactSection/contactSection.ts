@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-home-contact-section',
   standalone: true,
   templateUrl: './contactSection.html',
-  styleUrls: ['../home.scss'],
+  styleUrls: ['../home.scss', './contactSection.scss'],
 })
 export class HomeContactSectionComponent {}

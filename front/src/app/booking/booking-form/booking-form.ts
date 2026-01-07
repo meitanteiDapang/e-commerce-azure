@@ -7,8 +7,8 @@ import { Availability } from '../../shared/types';
   selector: 'app-booking-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './bookingForm.html',
-  styleUrls: ['./bookingForm.scss'],
+  templateUrl: './booking-form.html',
+  styleUrls: ['./booking-form.scss'],
 })
 export class BookingFormComponent {
   @Input({ required: true }) bookingForm!: FormGroup;

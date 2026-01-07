@@ -1,12 +1,12 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { RoomTypesService } from '../shared/roomTypesService';
+import { RoomTypesService } from '../shared/room-types-service';
 import { RoomType } from '../shared/types';
-import { HomeBookingTestPanelComponent } from './bookingTestPanel/bookingTestPanel';
-import { HomeContactSectionComponent } from './contactSection/contactSection';
-import { HomeHeroGridComponent } from './heroGrid/heroGrid';
-import { HomeHighlightsSectionComponent } from './highlightsSection/highlightsSection';
-import { HomeNavBarComponent } from './navBar/navBar';
+import { HomeBookingTestPanelComponent } from './booking-test-panel/booking-test-panel';
+import { HomeContactSectionComponent } from './contact-section/contact-section';
+import { HomeHeroGridComponent } from './hero-grid/hero-grid';
+import { HomeHighlightsSectionComponent } from './highlights-section/highlights-section';
+import { HomeNavBarComponent } from './nav-bar/nav-bar';
 
 @Component({
   selector: 'app-home-page',

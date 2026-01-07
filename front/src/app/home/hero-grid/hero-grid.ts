@@ -5,8 +5,8 @@ import { Component, Input } from '@angular/core';
   selector: 'app-home-hero-grid',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './heroGrid.html',
-  styleUrls: ['../home.scss', './heroGrid.scss'],
+  templateUrl: './hero-grid.html',
+  styleUrls: ['../home.scss', './hero-grid.scss'],
 })
 export class HomeHeroGridComponent {
   @Input({ required: true }) heroImage!: () => string;

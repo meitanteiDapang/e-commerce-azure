@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map, of, tap } from 'rxjs';
-import { ApiClientService } from '../shared/apiClientService';
+import { ApiClientService } from '../shared/api-client-service';
 
 export interface AdminLoginResult {
   success: boolean;

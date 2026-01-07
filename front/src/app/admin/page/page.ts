@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AdminAuthService } from '../adminAuthService';
+import { AdminAuthService } from '../admin-auth-service';
 import { BookingsTableComponent } from '../bookings/table/table';
 import { BookingsTimelineComponent } from '../bookings/timeline/timeline';
 
@@ -11,7 +11,7 @@ import { BookingsTimelineComponent } from '../bookings/timeline/timeline';
   standalone: true,
   imports: [CommonModule, BookingsTableComponent, BookingsTimelineComponent],
   templateUrl: './page.html',
-  styleUrls: ['../adminShared.scss', './page.scss'],
+  styleUrls: ['../admin-shared.scss', './page.scss'],
 })
 export class AdminPageComponent {
   private readonly router = inject(Router);

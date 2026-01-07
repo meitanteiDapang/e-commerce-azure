@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { catchError, map, throwError } from 'rxjs';
-import { ApiClientService } from './apiClientService';
+import { ApiClientService } from './api-client-service';
 import { Availability, BookingResult } from './types';
 
 interface AvailabilityParams {

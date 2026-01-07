@@ -4,13 +4,13 @@ import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, debounceTime, EMPTY, finalize, startWith, switchMap, tap, catchError } from 'rxjs';
-import { BookingService } from '../shared/bookingService';
-import { RoomTypesService } from '../shared/roomTypesService';
+import { BookingService } from '../shared/booking-service';
+import { RoomTypesService } from '../shared/room-types-service';
 import { Availability, RoomType } from '../shared/types';
-import { BookingFormComponent } from './bookingForm/bookingForm';
-import { BookingHeaderComponent } from './bookingHeader/bookingHeader';
-import { BookingSummaryComponent } from './bookingSummary/bookingSummary';
-import { parseRoomTypeId, sanitizePhone, toIsoDate } from './bookingHelpers';
+import { BookingFormComponent } from './booking-form/booking-form';
+import { BookingHeaderComponent } from './booking-header/booking-header';
+import { BookingSummaryComponent } from './booking-summary/booking-summary';
+import { parseRoomTypeId, sanitizePhone, toIsoDate } from './booking-helpers';
 
 @Component({
   selector: 'app-booking',

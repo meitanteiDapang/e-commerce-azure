@@ -12,8 +12,8 @@ interface RoomTypesState {
   selector: 'app-home-highlights-section',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './highlightsSection.html',
-  styleUrls: ['../home.scss', './highlightsSection.scss'],
+  templateUrl: './highlights-section.html',
+  styleUrls: ['../home.scss', './highlights-section.scss'],
 })
 export class HomeHighlightsSectionComponent {
   @Input({ required: true }) roomTypesState!: () => RoomTypesState;

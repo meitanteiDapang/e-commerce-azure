@@ -5,8 +5,8 @@ import { DapangButton } from "../../dapang-button/dapang-button";
 @Component({
   selector: 'app-home-nav-bar',
   standalone: true,
-  templateUrl: './navBar.html',
-  styleUrls: ['../home.scss', './navBar.scss'],
+  templateUrl: './nav-bar.html',
+  styleUrls: ['../home.scss', './nav-bar.scss'],
   imports: [DapangButton],
 })
 export class HomeNavBarComponent {

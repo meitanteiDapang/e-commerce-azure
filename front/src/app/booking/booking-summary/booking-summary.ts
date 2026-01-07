@@ -6,8 +6,8 @@ import { RoomType } from '../../shared/types';
   selector: 'app-booking-summary',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './bookingSummary.html',
-  styleUrls: ['./bookingSummary.scss'],
+  templateUrl: './booking-summary.html',
+  styleUrls: ['./booking-summary.scss'],
 })
 export class BookingSummaryComponent {
   @Input({ required: true }) room: RoomType | null = null;

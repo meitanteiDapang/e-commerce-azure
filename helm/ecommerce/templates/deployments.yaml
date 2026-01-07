@@ -1,4 +1,4 @@
-{{- $uiTarget := .Values.ui.target | default "front" }}
+{{- $uiTarget := default "front" .Values.ui.target | lower }}
 {{- if eq $uiTarget "front" }}
 apiVersion: apps/v1
 kind: Deployment

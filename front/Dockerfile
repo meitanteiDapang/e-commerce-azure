@@ -4,9 +4,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build -- --output-path=dist
+RUN npm run build
 
 # runtime stage
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist/front /usr/share/nginx/html
 EXPOSE 80

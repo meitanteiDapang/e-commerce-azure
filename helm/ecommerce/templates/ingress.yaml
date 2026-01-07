@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled }}
-{{- $uiTarget := .Values.ui.target | default "front" }}
-{{- $uiService := ternary (printf "%s-front" .Release.Name) (printf "%s-web" .Release.Name) (eq $uiTarget "front") }}
+{{- $uiTarget := default "front" .Values.ui.target | lower }}
+{{- $uiService := printf "%s-%s" .Release.Name $uiTarget }}
+{{- $uiPort := ternary .Values.front.servicePort .Values.web.servicePort (eq $uiTarget "front") }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -33,7 +34,7 @@ spec:
               service:
                 name: {{ $uiService }}
                 port:
-                  number: 80
+                  number: {{ $uiPort }}
     {{- end }}
     # Catch-all rule so ingress IP works without Host header
     - http:
@@ -44,7 +45,7 @@ spec:
               service:
                 name: {{ $uiService }}
                 port:
-                  number: 80
+                  number: {{ $uiPort }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

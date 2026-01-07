@@ -1,0 +1,16 @@
+.booking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.back-btn {
+  border: none;
+  background: transparent;
+  color: #0f1626;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 0;
+}

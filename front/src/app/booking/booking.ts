@@ -1,32 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, debounceTime, EMPTY, finalize, startWith, switchMap, tap, catchError } from 'rxjs';
 import { BookingService } from '../shared/bookingService';
 import { RoomTypesService } from '../shared/roomTypesService';
 import { Availability, RoomType } from '../shared/types';
-
-const sanitizePhone = (raw: string): string => {
-  if (!raw) return '';
-  const cleaned = raw.replace(/[^\d+]/g, '');
-  const hasLeadingPlus = cleaned.startsWith('+');
-  const digits = cleaned.replace(/\D/g, '');
-  return hasLeadingPlus ? `+${digits}` : digits;
-};
-
-const toIsoDate = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+import { BookingFormComponent } from './bookingForm/bookingForm';
+import { BookingHeaderComponent } from './bookingHeader/bookingHeader';
+import { BookingSummaryComponent } from './bookingSummary/bookingSummary';
+import { parseRoomTypeId, sanitizePhone, toIsoDate } from './bookingHelpers';
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, BookingFormComponent, BookingHeaderComponent, BookingSummaryComponent],
   templateUrl: './booking.html',
   styleUrls: ['./booking.scss'],
 })
@@ -47,7 +36,7 @@ export class BookingComponent {
   });
 
   readonly roomTypesState = this.roomTypesService.roomTypesState;
-  readonly roomTypeId = signal<number | null>(this.parseRoomTypeId(this.route.snapshot.queryParamMap.get('roomTypeId')));
+  readonly roomTypeId = signal<number | null>(parseRoomTypeId(this.route.snapshot.queryParamMap.get('roomTypeId')));
   readonly selectedRoom = computed<RoomType | null>(() => {
     const id = this.roomTypeId();
     if (id == null) return null;
@@ -65,7 +54,7 @@ export class BookingComponent {
   constructor() {
     this.roomTypesService.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      this.roomTypeId.set(this.parseRoomTypeId(params.get('roomTypeId')));
+      this.roomTypeId.set(parseRoomTypeId(params.get('roomTypeId')));
     });
     this.setupAvailabilityWatcher();
   }
@@ -259,9 +248,4 @@ export class BookingComponent {
       .subscribe();
   }
 
-  private parseRoomTypeId(raw: string | null): number | null {
-    if (!raw) return null;
-    const parsed = Number(raw);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
 }

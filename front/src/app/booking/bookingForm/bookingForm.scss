@@ -1,0 +1,33 @@
+.booking-form {
+  display: grid;
+  gap: 14px;
+}
+
+.field-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.availability {
+  font-size: 14px;
+  font-weight: 600;
+  color: #324863;
+}
+
+.total-price {
+  margin-top: 6px;
+  color: #0f1626;
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 700;
+}
+
+.availability-error-text {
+  color: #d43c62;
+  font-weight: 700;
+}
+
+.availability-text {
+  color: #10d046;
+  font-weight: 700;
+}

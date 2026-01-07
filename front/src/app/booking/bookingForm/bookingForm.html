@@ -1,0 +1,60 @@
+<form class="booking-form" [formGroup]="bookingForm" (ngSubmit)="submit.emit()" novalidate>
+  <div class="field-group">
+    <label class="field">
+      <span>Check-in</span>
+      <input type="date" formControlName="checkInDate" [min]="today" />
+    </label>
+    <label class="field">
+      <span>Check-out</span>
+      <input type="date" formControlName="checkOutDate" [min]="minCheckOutDate" />
+    </label>
+  </div>
+  <label class="field">
+    <span>Name</span>
+    <input type="text" formControlName="name" placeholder="Your full name" />
+  </label>
+  <label class="field">
+    <span>Email</span>
+    <input type="email" formControlName="email" placeholder="you@example.com" />
+  </label>
+  <label class="field">
+    <span>Phone</span>
+    <input
+      type="tel"
+      formControlName="phone"
+      inputmode="tel"
+      pattern="[+0-9]*"
+      (input)="phoneInput.emit($event)"
+      placeholder="11 111 1111"
+    />
+  </label>
+
+  <p class="subtext total-price">
+    Total: ${{ totalPrice.total }} ({{ totalPrice.nights }} night{{
+    totalPrice.nights === 1 ? '' : 's' }})
+  </p>
+
+  <div class="availability">
+    @if (!bookingForm.value.checkInDate || !bookingForm.value.checkOutDate){
+    <span class="availability-text">
+      Select check-in and check-out dates to check availability.
+    </span>
+    } @else if(checking) {
+    <span class="availability-text">Checking availability...</span>
+    } @else if(availabilityError) {
+    <span class="availability-error-text">{{ availabilityError }}</span>
+    } @else if (availability) {
+    <span
+      class="availability-text"
+      [ngClass]="availability.available ? 'availability-text' : 'availability-error'"
+    >
+      {{ availability.available ? (availability.remaining + ' rooms left')
+      : 'Sold out for these dates.' }}
+    </span>
+    }
+  </div>
+
+  <button class="book-btn primary" type="submit" [disabled]="bookingButtonDisabled">
+    {{ submitting ? 'Booking...' : 'Confirm booking' }}
+  </button>
+</form>

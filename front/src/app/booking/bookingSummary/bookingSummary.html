@@ -1,0 +1,14 @@
+<div class="booking-summary" *ngIf="room as selectedRoom">
+  <div class="img-wrap square">
+    <img
+      [src]="selectedRoom.imageUrl"
+      [alt]="selectedRoom.typeName ?? 'Selected room'"
+    />
+  </div>
+  <h2>{{ selectedRoom.typeName }}</h2>
+  <p>{{ selectedRoom.bedNumber }} beds · ${{ selectedRoom.price }}</p>
+  <p class="subtext">
+    Pick your check-in and check-out dates and leave your contact details. We
+    will hold the room after booking.
+  </p>
+</div>

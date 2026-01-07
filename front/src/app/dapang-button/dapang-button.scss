@@ -1,0 +1,19 @@
+.logo {
+  border: 1px solid rgba(15, 22, 38, 0.08);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0f1626;
+  padding: 12px 16px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0px 10px 35px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  cursor: pointer;
+}
+
+.logo:hover {
+  transform: translateY(-2px);
+}

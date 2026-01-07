@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RoomTypesService } from '../../shared/roomTypesService';
 import { RoomType } from '../../shared/types';
+import { parseRoomTypeId } from '../bookingHelpers';
 
 @Component({
   selector: 'app-booking-success',
@@ -17,7 +18,7 @@ export class BookingSuccessComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly roomTypesService = inject(RoomTypesService);
 
-  readonly roomTypeId = signal<number | null>(this.parseRoomTypeId(this.route.snapshot.queryParamMap.get('roomTypeId')));
+  readonly roomTypeId = signal<number | null>(parseRoomTypeId(this.route.snapshot.queryParamMap.get('roomTypeId')));
   readonly roomTypesState = this.roomTypesService.roomTypesState;
   readonly selectedRoom = computed<RoomType | null>(() => {
     const id = this.roomTypeId();
@@ -28,7 +29,7 @@ export class BookingSuccessComponent {
   constructor() {
     this.roomTypesService.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
-      this.roomTypeId.set(this.parseRoomTypeId(params.get('roomTypeId')));
+      this.roomTypeId.set(parseRoomTypeId(params.get('roomTypeId')));
     });
   }
 
@@ -43,9 +44,4 @@ export class BookingSuccessComponent {
     this.router.navigate(['/']);
   }
 
-  private parseRoomTypeId(raw: string | null): number | null {
-    if (!raw) return null;
-    const parsed = Number(raw);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
 }

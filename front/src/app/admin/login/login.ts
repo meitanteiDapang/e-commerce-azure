@@ -31,7 +31,7 @@ export class AdminLoginComponent {
       .pipe(takeUntilDestroyed())
       .subscribe((valid) => {
         if (valid) {
-          this.router.navigate(['/admin']);
+          this.router.navigate(['/admin'], { replaceUrl: true });
         }
       });
   }

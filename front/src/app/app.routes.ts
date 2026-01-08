@@ -13,18 +13,22 @@ export const routes: Routes = [
   },
   {
     path: 'book',
+    title: 'Booking',
     component: BookingComponent,
   },
   {
     path: 'booked',
+    title: 'Booking successfully',
     component: BookingSuccessComponent,
   },
   {
     path: 'adminLogin',
+    title: "Admin Login",
     component: AdminLoginComponent,
   },
   {
     path: 'admin',
+    title: "admin board",
     component: AdminPageComponent,
     canActivate: [adminAuthGuard],
   },

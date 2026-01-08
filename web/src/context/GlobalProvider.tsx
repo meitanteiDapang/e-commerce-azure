@@ -4,12 +4,7 @@ import { GlobalContext, globalReducer, initialState } from './globalContext'
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [state, globalDispatch] = useReducer(
     globalReducer,
-    initialState,
-    (state) => {
-      if (typeof window === 'undefined') return state
-      const storedToken = window.localStorage.getItem('adminToken')
-      return storedToken ? { ...state, adminToken: storedToken } : state
-    },
+    initialState
   )
 
   useEffect(() => {

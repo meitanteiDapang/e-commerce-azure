@@ -9,9 +9,4 @@ import { DapangButton } from "../../dapang-button/dapang-button";
   imports: [DapangButton],
 })
 export class BookingHeaderComponent {
-  @Output() readonly back = new EventEmitter<void>();
-
-  handleBack(): void {
-    this.back.emit();
-  }
 }

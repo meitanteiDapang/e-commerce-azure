@@ -7,7 +7,6 @@ export const sanitizePhone = (raw: string): string => {
     if (
       (ch >= "0" && ch <= "9") ||
       ch === "+" ||
-      ch === "-" ||
       ch === " "
     ) {
       out += ch;
@@ -24,7 +23,7 @@ export const isPhonePatternLegal = (phone: string): boolean => {
       digits += 1;
       continue;
     }
-    if (ch === "+" || ch === "-" || ch === " ") {
+    if (ch === "+" || ch === " ") {
       continue;
     }
     return false;

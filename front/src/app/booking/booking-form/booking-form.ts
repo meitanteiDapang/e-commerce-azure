@@ -7,9 +7,15 @@ import {
   computed,
   inject,
   input,
-  signal,
 } from "@angular/core";
-import { FormBuilder, ReactiveFormsModule } from "@angular/forms";
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from "@angular/forms";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import {
   combineLatest,
@@ -23,12 +29,19 @@ import {
 } from "rxjs";
 import { BookingService } from "../../shared/booking-service";
 import { Availability, RoomType } from "../../shared/types";
-import {
-  sanitizePhone,
-  toIsoDate,
-  isEmailPatternLegal,
-  isPhonePatternLegal,
-} from "../booking-helpers";
+import { sanitizePhone, toIsoDate, isPhonePatternLegal, isEmailPatternLegal } from "../booking-helpers";
+
+const errorMessages = {
+  nameRequired: "Please input your name.",
+  emailRequired: "Please enter your email address.",
+  emailInvalid: "Please enter a valid email address.",
+  phoneRequired: "Please enter your phone number.",
+  phoneInvalid: "Please enter a valid phone number.",
+  checkInRequired: "Please select a check-in date.",
+  checkInMinDate: "Check-in must be today or later.",
+  checkOutRequired: "Please select a check-out date.",
+  dateOrder: "Check-out must be after check-in.",
+} as const;
 
 @Component({
   selector: "app-booking-form",
@@ -47,24 +60,19 @@ export class BookingFormComponent {
 
   @Output() readonly booked = new EventEmitter<{ roomTypeId: number }>();
 
-  readonly bookingForm = this.fb.group({
-    checkInDate: [""],
-    checkOutDate: [""],
-    name: [""],
-    email: [""],
-    phone: [""],
-  });
+  readonly bookingForm = this.fb.nonNullable.group({
+    checkInDate: ["", [Validators.required, this.minDateValidator]],
+    checkOutDate: ["", Validators.required],
+    name: ["", Validators.required],
+    email: ["", [Validators.required, this.emailValidator]],
+    phone: ["", [Validators.required, this.phoneValidator]],
+  }, { validators: this.checkOutAfterCheckInValidator });
 
   availability: Availability | null = null;
   availabilityError = "";
   checking = false;
   submitting = false;
   error = "";
-
-  dateErrorText = "";
-  nameErrorText = "";
-  emailErrorText = "";
-  phoneErrorText = "";
 
   success = "";
   readonly today = toIsoDate(new Date());
@@ -90,7 +98,7 @@ export class BookingFormComponent {
 
   get totalPrice() {
     const room = this.roomType();
-    const formValue = this.bookingForm.value;
+    const formValue = this.bookingForm.getRawValue();
     if (!room || !formValue.checkInDate || !formValue.checkOutDate) {
       return { nights: 0, total: 0 };
     }
@@ -110,18 +118,11 @@ export class BookingFormComponent {
   }
 
   get isBookingFormFinished(): boolean {
-    const formValue = this.bookingForm.value;
-    return (this.availability?.available === true &&
-      formValue.name &&
-      !this.nameErrorText &&
-      formValue.email &&
-      !this.emailErrorText &&
-      formValue.phone &&
-      !this.phoneErrorText) as boolean;
+    return this.availability?.available === true && this.bookingForm.valid;
   }
 
   get bookingButtonDisabled(): boolean {
-    const formValue = this.bookingForm.value;
+    const formValue = this.bookingForm.getRawValue();
     return (
       this.submitting ||
       this.checking ||
@@ -131,46 +132,50 @@ export class BookingFormComponent {
     );
   }
 
-  onNameChange(event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    if (!input) return;
-    const raw = input.value;
-    if (raw == "") {
-      this.nameErrorText = "Please input your name.";
-    } else {
-      this.nameErrorText = "";
-    }
+  get checkInDateError(): string {
+    const control = this.bookingForm.controls.checkInDate;
+    if (!control.touched) return "";
+    if (control.hasError("required")) return errorMessages.checkInRequired;
+    if (control.hasError("minDate")) return errorMessages.checkInMinDate;
+    return "";
   }
 
-  onEmailValidated(res: boolean): void {
-    if (res) {
-      this.emailErrorText = "";
-    } else {
-      this.emailErrorText = "Please enter a valid email address.";
-    }
+  get checkOutDateError(): string {
+    const control = this.bookingForm.controls.checkOutDate;
+    if (!control.touched) return "";
+    if (control.hasError("required")) return errorMessages.checkOutRequired;
+    return "";
   }
 
-  onEmailChange(event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    if (!input) return;
-    console.log(input.value);
-    const raw = input.value;
-    this.onEmailValidated(isEmailPatternLegal(raw));
+  get dateRangeError(): string {
+    const checkInTouched = this.bookingForm.controls.checkInDate.touched;
+    const checkOutTouched = this.bookingForm.controls.checkOutDate.touched;
+    if (!(checkInTouched || checkOutTouched)) return "";
+    return this.bookingForm.hasError("dateOrder")
+      ? errorMessages.dateOrder
+      : "";
   }
 
-  onPhoneValidated(res: boolean): void {
-    if (res) {
-      this.phoneErrorText = "";
-    } else {
-      this.phoneErrorText = "Please enter a valid phone number.";
-    }
+  get nameError(): string {
+    const control = this.bookingForm.controls.name;
+    if (!control.touched) return "";
+    return control.hasError("required") ? errorMessages.nameRequired : "";
   }
 
-  onPhoneChange(event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    if (!input) return;
-    const raw = input.value;
-    this.onPhoneValidated(isPhonePatternLegal(raw));
+  get emailError(): string {
+    const control = this.bookingForm.controls.email;
+    if (!control.touched) return "";
+    if (control.hasError("required")) return errorMessages.emailRequired;
+    if (control.hasError("email")) return errorMessages.emailInvalid;
+    return "";
+  }
+
+  get phoneError(): string {
+    const control = this.bookingForm.controls.phone;
+    if (!control.touched) return "";
+    if (control.hasError("required")) return errorMessages.phoneRequired;
+    if (control.hasError("phone")) return errorMessages.phoneInvalid;
+    return "";
   }
 
   onPhoneInput(event: Event): void {
@@ -183,24 +188,16 @@ export class BookingFormComponent {
   handleSubmit(): void {
     this.error = "";
     this.success = "";
-    const formValue = this.bookingForm.value;
+    const formValue = this.bookingForm.getRawValue();
     const room = this.roomType();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     if (!room) {
       this.error = "Room type not determined.";
       return;
     }
 
-    if (
-      !(formValue.checkInDate &&
-        formValue.checkOutDate &&
-        formValue.name &&
-        formValue.email &&
-        formValue.phone &&
-        this.isBookingFormFinished)
-    ) {
+    if (!this.isBookingFormFinished) {
+      this.bookingForm.markAllAsTouched();
       this.error = "Please check your booking detail";
       return;
     }
@@ -305,5 +302,57 @@ export class BookingFormComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe();
+  }
+
+  private minDateValidator(
+    control: AbstractControl<string>
+  ): ValidationErrors | null {
+    const raw = control.value?.trim();
+    if (!raw) return null;
+    const parsed = BookingFormComponent.parseIsoDate(raw);
+    if (!parsed) return { minDate: true };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return parsed < today ? { minDate: true } : null;
+  }
+
+
+  private emailValidator(
+    control: AbstractControl<string>
+  ): ValidationErrors | null {
+    const raw = control.value?.trim();
+    if (!raw) return null;
+    return isEmailPatternLegal(raw) ? null : { email: true };
+  }
+
+  private phoneValidator(
+    control: AbstractControl<string>
+  ): ValidationErrors | null {
+    const raw = control.value?.trim();
+    if (!raw) return null;
+    return isPhonePatternLegal(raw) ? null : { phone: true };
+  }
+
+  private checkOutAfterCheckInValidator(
+    group: AbstractControl
+  ): ValidationErrors | null {
+    const form = group as FormGroup<{
+      checkInDate: AbstractControl<string>;
+      checkOutDate: AbstractControl<string>;
+    }>;
+    const checkInRaw = form.controls.checkInDate.value;
+    const checkOutRaw = form.controls.checkOutDate.value;
+    if (!checkInRaw || !checkOutRaw) return null;
+    const checkIn = BookingFormComponent.parseIsoDate(checkInRaw);
+    const checkOut = BookingFormComponent.parseIsoDate(checkOutRaw);
+    if (!checkIn || !checkOut) return null;
+    return checkOut > checkIn ? null : { dateOrder: true };
+  }
+
+  private static parseIsoDate(raw: string): Date | null {
+    const parsed = new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return null;
+    parsed.setHours(0, 0, 0, 0);
+    return parsed;
   }
 }

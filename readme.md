@@ -1,9 +1,9 @@
 ## Overview
-This is a demo for a motel system, covering both customer and admin experiences. See [dapang.live](https://dapang.live) for a running example.
+This site is a demo of a motel system with customer and admin experiences. It is built with Angular/React, ASP .NET and PostgreSQL, deployed to Azure AKS using Kubernetes and Helm, with CI/CD via GitHub Actions. See [dapang.live](https://dapang.live) for an example built with Angular and [react.dapang.live](https://react.dapang.live) for React.
 
 
 ## Tech Stack
-- Front-end: Angular (default), React (partial implemented)
+- Front-end: Angular (default), React
 - Backend API: ASP.NET Core 8 + EF Core
 - Database: PostgreSQL
 - CI/CD: GitHub Actions + Helm to Azure AKS

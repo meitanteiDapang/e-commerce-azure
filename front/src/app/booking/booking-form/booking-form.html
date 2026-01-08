@@ -4,11 +4,20 @@
       <span>Check-in</span>
       <input type="date" formControlName="checkInDate" [min]="today" />
     </label>
+    @if (checkInDateError) {
+      <span class="availability-error-text">{{ checkInDateError }}</span>
+    }
     <label class="field">
       <span>Check-out</span>
       <input type="date" formControlName="checkOutDate" [min]="minCheckOutDate" />
     </label>
+    @if (checkOutDateError) {
+      <span class="availability-error-text">{{ checkOutDateError }}</span>
+    }
   </div>
+  @if (dateRangeError) {
+    <span class="availability-error-text">{{ dateRangeError }}</span>
+  }
   @if(checking) {
     <span class="availability-text">Checking availability...</span>
     } @else if(availabilityError) {
@@ -24,16 +33,18 @@
 
   <label class="field">
     <span>Name</span>
-    <input type="text" formControlName="name" placeholder="Your full name" 
-    (change)="onNameChange($event)"/>
+    <input type="text" formControlName="name" placeholder="Your full name" />
   </label>
-  <span class="availability-error-text">{{ nameErrorText }}</span>
+  @if (nameError) {
+    <span class="availability-error-text">{{ nameError }}</span>
+  }
 
   <label class="field">
     <span>Email</span>
-    <input type="email" formControlName="email" placeholder="you@example.com" 
-    (change)="onEmailChange($event)"/>
-    <span class="availability-error-text">{{ emailErrorText }}</span>
+    <input type="email" formControlName="email" placeholder="you@example.com" />
+    @if (emailError) {
+      <span class="availability-error-text">{{ emailError }}</span>
+    }
   </label>
 
   <label class="field">
@@ -43,11 +54,12 @@
       formControlName="phone"
       inputmode="tel"
       (input)="onPhoneInput($event)"
-      placeholder="11 111 1111"
-      (change)="onPhoneChange($event)"
+      placeholder="+64 11 111 1111"
     />
   </label>
-  <span class="availability-error-text">{{ phoneErrorText }}</span>
+  @if (phoneError) {
+    <span class="availability-error-text">{{ phoneError }}</span>
+  }
 
   <p class="subtext total-price">
     Total: ${{ totalPrice.total }} ({{ totalPrice.nights }} night{{

@@ -47,14 +47,11 @@ export class BookingService {
     return this.http.post<BookingResult>(this.api.url('/bookings'), body, { observe: 'response' }).pipe(
       map((res) => res.body ?? {}),
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 409 && error.error && typeof error.error === 'object') {
+        if (error.status === 400 && error.error && typeof error.error === 'object') {
           const message = (error.error as { message?: string }).message;
-          return throwError(() => new Error(message || 'This room type is sold out for the selected dates.'));
+          return throwError(() => new Error(message || 'Unknown error!'));
         }
-        const errorText =
-          typeof error.error === 'string' && error.error.length > 0
-            ? error.error
-            : error.message || `Failed to create booking (HTTP ${error.status})`;
+        const errorText = (error.error as { message?: string }).message || `Failed to create booking (HTTP ${error.status})`;
         return throwError(() => new Error(errorText));
       }),
     );

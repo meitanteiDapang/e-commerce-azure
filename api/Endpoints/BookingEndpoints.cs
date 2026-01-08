@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Mail;
+using System.Text.RegularExpressions;
 using Ecommerce.Api.Data;
 using Ecommerce.Api.Models;
 using Microsoft.AspNetCore.Routing;
@@ -123,6 +125,19 @@ public static class BookingEndpoints
             return Results.BadRequest(new { message = "checkInDate, checkOutDate, guestName, guestEmail, and guestPhone are required." });
         }
 
+        var trimmedEmail = request.GuestEmail.Trim();
+        var trimmedPhone = request.GuestPhone.Trim();
+
+        if (!IsValidEmail(trimmedEmail))
+        {
+            return Results.BadRequest(new { message = "guestEmail is not valid." });
+        }
+
+        if (!IsValidPhone(trimmedPhone))
+        {
+            return Results.BadRequest(new { message = "guestPhone must be a valid phone number (digits with optional leading +)." });
+        }
+
         if (!DateOnly.TryParseExact(request.CheckInDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var checkInDate))
         {
             return Results.BadRequest(new { message = "checkInDate must be in yyyy-MM-dd format." });
@@ -176,8 +191,8 @@ public static class BookingEndpoints
             CheckInDate = checkInDate,
             CheckOutDate = checkOutDate,
             GuestName = request.GuestName.Trim(),
-            GuestEmail = request.GuestEmail.Trim(),
-            GuestPhone = request.GuestPhone.Trim()
+            GuestEmail = trimmedEmail,
+            GuestPhone = trimmedPhone
         };
 
         db.Bookings.Add(booking);
@@ -198,6 +213,25 @@ public static class BookingEndpoints
         await transaction.CommitAsync(cancellationToken);
 
         return Results.Created($"/bookings/{booking.Id}", new { id = booking.Id, roomNumber });
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsValidPhone(string phone)
+    {
+        // Accept an optional leading + and 6-20 digits
+        return Regex.IsMatch(phone, @"^\+?[0-9]{6,20}$");
     }
 
     private sealed record CreateBookingRequest(

@@ -21,17 +21,8 @@
     >
       <app-booking-summary [room]="selectedRoom()"></app-booking-summary>
       <app-booking-form
-        [bookingForm]="bookingForm"
-        [today]="today"
-        [minCheckOutDate]="minCheckOutDate"
-        [totalPrice]="totalPrice"
-        [checking]="checking"
-        [availabilityError]="availabilityError"
-        [availability]="availability"
-        [bookingButtonDisabled]="bookingButtonDisabled"
-        [submitting]="submitting"
-        (phoneInput)="onPhoneInput($event)"
-        (submit)="handleSubmit()"
+        [roomType]="selectedRoom()"
+        (booked)="handleBookingComplete($event)"
       ></app-booking-form>
     </div>
   </div>

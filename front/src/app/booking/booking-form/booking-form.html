@@ -1,4 +1,4 @@
-<form class="booking-form" [formGroup]="bookingForm" (ngSubmit)="submit.emit()" novalidate>
+<form class="booking-form" [formGroup]="bookingForm" (ngSubmit)="handleSubmit()" novalidate>
   <div class="field-group">
     <label class="field">
       <span>Check-in</span>
@@ -9,50 +9,52 @@
       <input type="date" formControlName="checkOutDate" [min]="minCheckOutDate" />
     </label>
   </div>
+  @if(checking) {
+    <span class="availability-text">Checking availability...</span>
+    } @else if(availabilityError) {
+    <span class="availability-error-text">{{ availabilityError }}</span>
+    } @else if (availability) {
+    <span
+      [ngClass]="availability.available ? 'availability-text' : 'availability-error-text'"
+    >
+      {{ availability.available ? (availability.remaining + ' rooms left')
+      : 'Sold out for these dates.' }}
+    </span>
+    }
+
   <label class="field">
     <span>Name</span>
-    <input type="text" formControlName="name" placeholder="Your full name" />
+    <input type="text" formControlName="name" placeholder="Your full name" 
+    (change)="onNameChange($event)"/>
   </label>
+  <span class="availability-error-text">{{ nameErrorText }}</span>
+
   <label class="field">
     <span>Email</span>
-    <input type="email" formControlName="email" placeholder="you@example.com" />
+    <input type="email" formControlName="email" placeholder="you@example.com" 
+    (change)="onEmailChange($event)"/>
+    <span class="availability-error-text">{{ emailErrorText }}</span>
   </label>
+
   <label class="field">
     <span>Phone</span>
     <input
       type="tel"
       formControlName="phone"
       inputmode="tel"
-      pattern="[+0-9]*"
-      (input)="phoneInput.emit($event)"
+      (input)="onPhoneInput($event)"
       placeholder="11 111 1111"
+      (change)="onPhoneChange($event)"
     />
   </label>
+  <span class="availability-error-text">{{ phoneErrorText }}</span>
 
   <p class="subtext total-price">
     Total: ${{ totalPrice.total }} ({{ totalPrice.nights }} night{{
     totalPrice.nights === 1 ? '' : 's' }})
   </p>
 
-  <div class="availability">
-    @if (!bookingForm.value.checkInDate || !bookingForm.value.checkOutDate){
-    <span class="availability-text">
-      Select check-in and check-out dates to check availability.
-    </span>
-    } @else if(checking) {
-    <span class="availability-text">Checking availability...</span>
-    } @else if(availabilityError) {
-    <span class="availability-error-text">{{ availabilityError }}</span>
-    } @else if (availability) {
-    <span
-      class="availability-text"
-      [ngClass]="availability.available ? 'availability-text' : 'availability-error'"
-    >
-      {{ availability.available ? (availability.remaining + ' rooms left')
-      : 'Sold out for these dates.' }}
-    </span>
-    }
-  </div>
+  <span class="availability-error-text">{{ error }}</span>
 
   <button class="book-btn primary" type="submit" [disabled]="bookingButtonDisabled">
     {{ submitting ? 'Booking...' : 'Confirm booking' }}

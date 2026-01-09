@@ -13,6 +13,21 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.room-type-img-wrap{
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.room-type-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
 
 .room-name-detail {
   display: flex;
@@ -67,4 +82,3 @@
   box-shadow: none;
   transform: none;
 }
-

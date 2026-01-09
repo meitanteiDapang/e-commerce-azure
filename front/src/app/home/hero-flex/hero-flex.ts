@@ -2,12 +2,12 @@ import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-home-hero-grid',
+  selector: 'app-home-hero-flex',
   standalone: true,
   imports: [CommonModule, NgOptimizedImage],
-  templateUrl: './hero-grid.html',
-  styleUrls: ['../home.scss', './hero-grid.scss'],
+  templateUrl: './hero-flex.html',
+  styleUrls: ['../home.scss', './hero-flex.scss'],
 })
-export class HomeHeroGridComponent {
+export class HomeHeroFlexComponent {
   @Input({ required: true }) heroImage!: () => string;
 }

@@ -4,7 +4,7 @@ import { RoomTypesService } from '../shared/room-types-service';
 import { RoomType } from '../shared/types';
 import { HomeBookingTestPanelComponent } from './booking-test-panel/booking-test-panel';
 import { HomeContactSectionComponent } from './contact-section/contact-section';
-import { HomeHeroGridComponent } from './hero-grid/hero-grid';
+import { HomeHeroFlexComponent } from './hero-flex/hero-flex';
 import { HomeHighlightsSectionComponent } from './highlights-section/highlights-section';
 import { HomeNavBarComponent } from './nav-bar/nav-bar';
 
@@ -13,7 +13,7 @@ import { HomeNavBarComponent } from './nav-bar/nav-bar';
   standalone: true,
   imports: [
     HomeNavBarComponent,
-    HomeHeroGridComponent,
+    HomeHeroFlexComponent,
     HomeHighlightsSectionComponent,
     HomeContactSectionComponent,
     HomeBookingTestPanelComponent,

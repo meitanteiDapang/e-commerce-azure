@@ -1,6 +1,4 @@
 using Ecommerce.Api.Data;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Api.Endpoints;

@@ -10,6 +10,8 @@ public static partial class BookingEndpoints
     {
         endpoints.MapGet("/bookings", GetBookings)
             .RequireAuthorization(new AuthorizeAttribute { Roles = "admin" });
+        endpoints.MapDelete("/bookings", DeleteBookings)
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "admin" });
         endpoints.MapPost("/bookings", CreateBooking);
         return endpoints;
     }

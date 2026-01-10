@@ -32,7 +32,7 @@ import {
   tap,
   catchError,
 } from "rxjs";
-import { BookingService } from "../../shared/booking-service";
+import { BookingService } from "../../services/public/booking-service";
 import { Availability, RoomType } from "../../shared/types";
 import { sanitizePhone, toIsoDate, isPhonePatternLegal } from "../booking-helpers";
 

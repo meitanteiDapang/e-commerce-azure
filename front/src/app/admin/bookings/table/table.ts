@@ -3,8 +3,8 @@ import { Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { AdminBooking } from '../../../shared/types';
-import { AdminAuthService } from '../../admin-auth-service';
-import { AdminBookingsService } from '../../admin-bookings-service';
+import { AdminAuthService } from '../../../services/admin/admin-auth-service';
+import { AdminBookingsService } from '../../../services/admin/admin-bookings-service';
 
 const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
   if (roomTypeId != null && roomNumber != null) {

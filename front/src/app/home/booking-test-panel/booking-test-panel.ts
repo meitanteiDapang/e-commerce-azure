@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input } from '@angular/core';
-import { TestProbeService } from '../test-probe-service';
+import { TestProbeService } from '../../services/public/test-probe-service';
 
 @Component({
   selector: 'app-home-booking-test-panel',

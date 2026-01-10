@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { RoomTypesService } from '../shared/room-types-service';
+import { RoomTypesService } from '../services/public/room-types-service';
 import { RoomType } from '../shared/types';
 import { HomeBookingTestPanelComponent } from './booking-test-panel/booking-test-panel';
 import { HomeContactSectionComponent } from './contact-section/contact-section';

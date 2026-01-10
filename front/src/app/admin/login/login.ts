@@ -3,7 +3,7 @@ import { Component, DestroyRef, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AdminAuthService } from '../admin-auth-service';
+import { AdminAuthService } from '../../services/admin/admin-auth-service';
 
 @Component({
   selector: 'app-admin-login',

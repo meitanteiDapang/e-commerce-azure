@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AdminAuthService } from '../admin-auth-service';
+import { AdminAuthService } from '../../services/admin/admin-auth-service';
 import { BookingsTableComponent } from '../bookings/table/table';
 import { BookingsTimelineComponent } from '../bookings/timeline/timeline';
 

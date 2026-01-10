@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, EMPTY, tap } from 'rxjs';
-import { ApiClientService } from '../shared/api-client-service';
+import { ApiClientService } from './api-client-service';
 import { TestProbeResponse, TestProbeState } from './test-probe-types';
 
 @Injectable({ providedIn: 'root' })

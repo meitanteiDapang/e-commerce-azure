@@ -39,36 +39,64 @@ export class BookingsTableComponent {
   loadError: string | null = null;
   total: number | null = null;
   constructor() {
+    // "$" suffix is a common convention (not enforced by RxJS) to mark Observable variables.
+    // toObservable(A) makes A's changes observable; when A updates, A$ emits.
     const token$ = toObservable(this.auth.token);
     const filter$ = toObservable(this.showFutureOnly);
     const page$ = toObservable(this.page);
 
+    const resetState = () => {
+      this.bookings = [];
+      this.total = null;
+      this.loadError = null;
+    };
+    const applySuccess = ({ bookings, total }: { bookings: AdminBooking[]; total: number | null }) => {
+      this.bookings = bookings;
+      this.total = total;
+      this.loadError = null;
+    };
+    const applyError = (err: unknown) => {
+      this.bookings = [];
+      this.total = null;
+      this.loadError = err instanceof Error ? err.message : 'Unknown error';
+    };
+
+    // combineLatest: when token/filter/page changes, emit the latest values together.
+    // On subscribe, it waits for each source to emit once, then emits immediately; later it emits on any change.
+    // Here token$/filter$/page$ emit their current values right away, so combineLatest fires once immediately.
     combineLatest([token$, filter$, page$])
+      // pipe: chains RxJS operators in order; each operator runs left-to-right and uses the previous result.
+      // .pipe(...) returns a new Observable.
       .pipe(
+        // switchMap: map that emission to a new inner Observable (HTTP request here).
+        // When the request returns, tap(applySuccess) or catchError(applyError) runs.
+        // If a new emission happens before the previous request returns, switchMap switches to the new request and ignores the old one.
         switchMap(([token, showFuture, page]) => {
           if (!token) {
-            this.bookings = [];
-            this.total = null;
-            this.loadError = null;
+            // Logged out or token missing: clear UI and stop here.
+            resetState();
+            // of(null): emit a single null value and complete, so switchMap still returns an Observable.
             return of(null);
           }
+
           const fromDate = showFuture ? this.getNzToday() : this.allSinceDate;
+          // It returns immediately (lazy); execution happens later when the outer stream is subscribed.
           return this.bookingsService.loadBookings(fromDate, page, this.PAGE_SIZE).pipe(
-            tap(({ bookings, total }) => {
-              this.bookings = bookings;
-              this.total = total;
-              this.loadError = null;
-            }),
+            // tap: run side effects (update component state) without changing the emitted value.
+            tap(applySuccess),
+            // Error path: clear data and store the message.
             catchError((err) => {
-              this.bookings = [];
-              this.total = null;
-              this.loadError = err instanceof Error ? err.message : 'Unknown error';
+              applyError(err);
               return of(null);
             }),
           );
         }),
+        // takeUntilDestroyed: auto-unsubscribe on component destroy to avoid leaks.
+        // It stops the whole chain (combineLatest -> switchMap -> inner HTTP request), so no more values or callbacks run.
+        // This happens at destroy time; it doesn't wait for the HTTP request to finish.
         takeUntilDestroyed(),
       )
+      // subscribe: starts the stream so it runs; without it nothing executes.
       .subscribe();
   }
 

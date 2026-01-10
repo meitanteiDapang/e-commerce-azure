@@ -45,23 +45,67 @@ const BookingsTable = () => {
     return `${pick("year")}-${pick("month")}-${pick("day")}`;
   };
 
+  const requestPageReset = () => {
+    if (page === 1 || pageResetQueuedRef.current) return false;
+    pageResetQueuedRef.current = true;
+    const defer =
+      typeof queueMicrotask === "function"
+        ? queueMicrotask
+        : (cb: () => void) => Promise.resolve().then(cb);
+    defer(() => {
+      pageResetQueuedRef.current = false;
+      setPage(1);
+    });
+    return true;
+  };
+
+  const getFromDate = () => (showFutureOnly ? getNzToday() : allSinceDate);
+
+  const normalizeBookingsPayload = (data: unknown) => {
+    const payload = data as { bookings?: unknown; total?: unknown } | unknown[];
+    const items = Array.isArray(payload)
+      ? payload
+      : Array.isArray((payload as { bookings?: unknown }).bookings)
+      ? (payload as { bookings: unknown[] }).bookings
+      : [];
+    const totalCount =
+      !Array.isArray(payload) &&
+      typeof (payload as { total?: unknown }).total === "number"
+        ? Math.max(0, Math.floor((payload as { total: number }).total))
+        : null;
+    return { bookings: items as AdminBooking[], total: totalCount };
+  };
+
+  const fetchBookings = async (
+    tokenValue: string,
+    fromDate: string,
+    pageValue: number,
+    signal: AbortSignal
+  ) => {
+    const params = new URLSearchParams({
+      fromCheckOutDate: fromDate,
+      page: pageValue.toString(),
+      pageSize: PAGE_SIZE.toString(),
+    });
+    const res = await fetch(apiUrl(`/bookings?${params.toString()}`), {
+      headers: {
+        Authorization: `Bearer ${tokenValue}`,
+      },
+      signal,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const errorMessage =
+        (data as { message?: string } | null)?.message ?? `HTTP ${res.status}`;
+      return { error: errorMessage, bookings: [] as AdminBooking[], total: null };
+    }
+    const normalized = normalizeBookingsPayload(data);
+    return { error: null as string | null, ...normalized };
+  };
+
   // Load bookings when token, filter, or page changes.
 
   useEffect(() => {
-    const requestPageReset = () => {
-      if (page === 1 || pageResetQueuedRef.current) return false;
-      pageResetQueuedRef.current = true;
-      const defer =
-        typeof queueMicrotask === "function"
-          ? queueMicrotask
-          : (cb: () => void) => Promise.resolve().then(cb);
-      defer(() => {
-        pageResetQueuedRef.current = false;
-        setPage(1);
-      });
-      return true;
-    };
-
     if (!token) {
       fromDateRef.current = null;
       tokenRef.current = null;
@@ -75,7 +119,7 @@ const BookingsTable = () => {
       resetPage = true;
     }
 
-    const fromDate = showFutureOnly ? getNzToday() : allSinceDate;
+    const fromDate = getFromDate();
     if (fromDateRef.current !== fromDate) {
       fromDateRef.current = fromDate;
       resetPage = true;
@@ -85,54 +129,27 @@ const BookingsTable = () => {
       return;
     }
 
-    // Prevent state updates if the component unmounts mid-request.
-    let isActive = true;
+    const controller = new AbortController();
     const load = async () => {
       try {
-        const params = new URLSearchParams({
-          fromCheckOutDate: fromDate,
-          page: page.toString(),
-          pageSize: PAGE_SIZE.toString(),
-        });
-        const res = await fetch(apiUrl(`/bookings?${params.toString()}`), {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!isActive) return;
-
-        const data = await res.json().catch(() => null);
-        if (!res.ok) {
-          const errorMessage =
-            (data as { message?: string } | null)?.message ??
-            `HTTP ${res.status}`;
-          setLoadError(errorMessage);
+        const result = await fetchBookings(
+          token,
+          fromDate,
+          page,
+          controller.signal
+        );
+        if (controller.signal.aborted) return;
+        if (result.error) {
+          setLoadError(result.error);
           setBookings([]);
           return;
         }
-
-        // API currently returns either an array or an object with { bookings, total }.
-        const payload = data as
-          | { bookings?: unknown; total?: unknown }
-          | unknown[];
-        // Normalise payload so the rest of the component can rely on arrays/numbers.
-        const items = Array.isArray(payload)
-          ? payload
-          : Array.isArray((payload as { bookings?: unknown }).bookings)
-          ? (payload as { bookings: unknown[] }).bookings
-          : [];
-        const totalCount =
-          !Array.isArray(payload) &&
-          typeof (payload as { total?: unknown }).total === "number"
-            ? Math.max(0, Math.floor((payload as { total: number }).total))
-            : null;
-        const bookingsPage = items as AdminBooking[];
-        setBookings(bookingsPage);
-        setTotal(totalCount);
+        setBookings(result.bookings);
+        setTotal(result.total);
         setLoadError(null);
       } catch (err) {
-        if (!isActive) return;
+        if (controller.signal.aborted) return;
+        if (err instanceof Error && err.name === "AbortError") return;
         if (err instanceof Error) {
           setLoadError(err.message);
           setBookings([]);
@@ -147,9 +164,9 @@ const BookingsTable = () => {
 
     load();
     return () => {
-      isActive = false;
+      controller.abort();
     };
-  }, [token, showFutureOnly, page]);
+  }, [token, showFutureOnly, page, getFromDate, requestPageReset, fetchBookings]);
 
   if (!token) {
     return null;

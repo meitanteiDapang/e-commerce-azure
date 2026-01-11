@@ -19,7 +19,7 @@ const AdminActionMenu = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const isDisabled = useMemo(()=> isDeleting, [isDeleting]);
+  const isDisabled = useMemo(() => isDeleting, [isDeleting]);
 
   useEffect(() => {
     if (!isOpen) return;

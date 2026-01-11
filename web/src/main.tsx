@@ -13,7 +13,7 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <GlobalProvider>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true }}>
         <App />
       </BrowserRouter>
     </GlobalProvider>

@@ -26,7 +26,7 @@ const BookingsTable = () => {
   const PAGE_SIZE = 20;
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+
   const [showFutureOnly, setShowFutureOnly] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState<number | null>(null);
@@ -34,7 +34,12 @@ const BookingsTable = () => {
   const fromDateRef = useRef<string | null>(null);
   const tokenRef = useRef<string | null>(null);
   const pageResetQueuedRef = useRef(false);
+  const noticeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const allSinceDate = "1970-01-01";
+  const [isShowingNotice, setIsShowingNotice] = useState<boolean>(false);
+  const [noticeMessage, setNoticeMessage] = useState<string>("");
+
 
   const getNzToday = useCallback(() => {
     const formatter = new Intl.DateTimeFormat("en-US", {
@@ -117,6 +122,27 @@ const BookingsTable = () => {
     },
     [PAGE_SIZE]
   );
+
+  const handleDeleted = useCallback(() => {
+    if (bookings.length === 1 && page > 1) {
+      setPage((prev) => Math.max(1, prev - 1));
+      return;
+    }
+    setRefreshCount((prev) => prev + 1);
+  }, [bookings.length, page]);
+
+  // useCallback keeps handler identities stable for AdminActionMenu renders.
+  const handleNotify = useCallback((message: string) => {
+    setNoticeMessage(message);
+    setIsShowingNotice(true);
+    if (noticeTimeoutRef.current) {
+      clearTimeout(noticeTimeoutRef.current);
+    }
+    noticeTimeoutRef.current = setTimeout(() => {
+      setIsShowingNotice(false);
+      noticeTimeoutRef.current = null;
+    }, 4000);
+  }, []);
 
   // Load bookings when token, filter, or page changes.
 
@@ -215,14 +241,8 @@ const BookingsTable = () => {
         <AdminActionMenu
           booking={booking}
           token={token}
-          onDeleted={() => {
-            if (bookings.length === 1 && page > 1) {
-              setPage((prev) => Math.max(1, prev - 1));
-              return;
-            }
-            setRefreshCount((prev) => prev + 1);
-          }}
-          onNotify={(message) => setNotice(message)}
+          onDeleted={handleDeleted}
+          onNotify={handleNotify}
         />
       </td>
     </tr>
@@ -255,7 +275,9 @@ const BookingsTable = () => {
 
   return (
     <>
-      {notice ? <NoticeToast key={notice} message={notice} /> : null}
+      {isShowingNotice && <NoticeToast
+        message={noticeMessage}
+      />}
       <div className="admin-secondary-row">
         <button
           className="book-btn admin-flat-btn admin-toggle-btn"

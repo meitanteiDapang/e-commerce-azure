@@ -1,0 +1,54 @@
+<details class="admin-action-menu" #menu [open]="isMenuOpen()">
+  <summary
+    class="admin-action-trigger"
+    aria-label="Actions"
+  ></summary>
+  <div class="admin-action-dropdown">
+    <button
+      class="admin-action-item"
+      type="button"
+      (click)="onDeleteClicked()"
+    >
+      Delete
+    </button>
+  </div>
+</details>
+@if (confirmDeleteOpen) {
+<div class="admin-action-confirm-backdrop" (click)="onCancelDelete()">
+  <div class="admin-action-confirm-card" (click)="$event.stopPropagation()">
+    <p class="admin-action-confirm-title">Delete this booking?</p>
+    <div class="admin-action-confirm-body">
+      <div>Deleting booking:</div>
+      <ul>
+        <li>ID: {{ booking().id ?? "-" }}</li>
+        <li>Guest: {{ booking().guestName ?? "-" }}</li>
+        <li>
+          Room: {{
+            formatRoomLabel(booking().roomTypeId, booking().roomNumber)
+          }}
+        </li>
+        <li>Check-in: {{ booking().checkInDate ?? "-" }}</li>
+        <li>Check-out: {{ booking().checkOutDate ?? "-" }}</li>
+      </ul>
+      <div>This action cannot be undone.</div>
+    </div>
+    <div class="admin-action-confirm-actions">
+      <button
+        class="admin-action-item"
+        type="button"
+        (click)="onCancelDelete()"
+      >
+        Cancel
+      </button>
+      <button
+        class="admin-action-item admin-action-danger"
+        type="button"
+        [disabled]="pendingDeleteId === null"
+        (click)="onConfirmDelete()"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+}

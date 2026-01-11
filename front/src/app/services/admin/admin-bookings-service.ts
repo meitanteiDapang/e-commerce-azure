@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { catchError, map, throwError } from 'rxjs';
+import { catchError, map, of, tap, throwError } from 'rxjs';
 import { ApiClientService } from '../public/api-client-service';
 import { AdminBooking } from '../../shared/types';
 import { AdminAuthService } from './admin-auth-service';
@@ -40,6 +40,36 @@ export class AdminBookingsService {
         }),
       );
   }
+
+  deleteBookings(deletedBookingId: number) {
+    const headers = this.auth.authHeaders();
+    if (!headers) {
+      return throwError(() => new Error('Missing admin token.'));
+    }
+
+    const params = new HttpParams().set('bookingId', deletedBookingId);
+    return this.http.delete<unknown>(this.api.url('/bookings'), {
+      headers,
+      params,
+      observe: 'response',
+    }).pipe(
+      map((response) => {
+        if (response.status >= 200 && response.status < 300) {
+          return { ok: true, message: 'Delete Succussfully' };
+        }
+        return { ok: false, message: `http code: ${response.status}` };
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.log('deleteBookings before catchError:', error);
+        const status = error?.status ?? 'unknown';
+        const message = (error.error as { message?: string } | null)?.message ?? 'No error message given.';
+        const result = { ok: false, message: `http code: ${status}${message ? ` ${message}` : ''}` };
+        console.log('deleteBookings after catchError:', result);
+        return of(result);
+      })
+    );
+  }
+
 
   private normalize(payload: unknown): BookingsPage {
     const items = Array.isArray(payload)

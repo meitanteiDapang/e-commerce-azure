@@ -32,7 +32,7 @@
   border-collapse: collapse;
   border-spacing: 0;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
   background: #ffffff;
   box-shadow: 0 18px 40px rgba(15, 22, 38, 0.08);
   font-size: 0.95rem;
@@ -60,72 +60,6 @@
 
 .admin-action-cell {
   position: relative;
-}
-
-.admin-action-menu {
-  position: relative;
-  display: inline-block;
-}
-
-.admin-action-trigger {
-  list-style: none;
-  cursor: pointer;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 22, 38, 0.2);
-  background: #ffffff;
-  color: #1e2636;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.admin-action-trigger::-webkit-details-marker {
-  display: none;
-}
-
-.admin-action-trigger::after {
-  content: "";
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid #1e2636;
-}
-
-.admin-action-menu[open] .admin-action-trigger {
-  border-color: rgba(15, 22, 38, 0.4);
-  box-shadow: 0 8px 20px rgba(15, 22, 38, 0.12);
-}
-
-.admin-action-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 140px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 22, 38, 0.12);
-  border-radius: 14px;
-  box-shadow: 0 12px 30px rgba(15, 22, 38, 0.15);
-  padding: 8px;
-  z-index: 10;
-}
-
-.admin-action-item {
-  width: 100%;
-  border: none;
-  background: transparent;
-  text-align: left;
-  padding: 8px 10px;
-  border-radius: 10px;
-  font-weight: 600;
-  color: #1e2636;
-  cursor: pointer;
-}
-
-.admin-action-item:hover {
-  background: rgba(15, 22, 38, 0.06);
 }
 
 .admin-bookings tbody tr:nth-child(even) {

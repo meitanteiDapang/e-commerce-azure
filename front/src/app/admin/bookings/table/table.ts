@@ -5,6 +5,8 @@ import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { AdminBooking } from '../../../shared/types';
 import { AdminAuthService } from '../../../services/admin/admin-auth-service';
 import { AdminBookingsService } from '../../../services/admin/admin-bookings-service';
+import { AdminActionMenuComponent } from './action-menu/action-menu';
+import { NoticeToastComponent } from '../../../shared/notice-toast/notice-toast';
 
 const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
   if (roomTypeId != null && roomNumber != null) {
@@ -22,7 +24,7 @@ const formatRoomLabel = (roomTypeId?: number, roomNumber?: number) => {
 @Component({
   selector: 'app-bookings-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminActionMenuComponent, NoticeToastComponent],
   templateUrl: './table.html',
   styleUrls: ['../../admin-shared.scss', './table.scss'],
 })
@@ -33,6 +35,7 @@ export class BookingsTableComponent {
   readonly PAGE_SIZE = 20;
   readonly showFutureOnly = signal(true);
   readonly page = signal(1);
+  private readonly refresh = signal(0);
   private readonly allSinceDate = '1970-01-01';
 
   bookings: AdminBooking[] = [];
@@ -44,6 +47,7 @@ export class BookingsTableComponent {
     const token$ = toObservable(this.auth.token);
     const filter$ = toObservable(this.showFutureOnly);
     const page$ = toObservable(this.page);
+    const refresh$ = toObservable(this.refresh);
 
     const resetState = () => {
       this.bookings = [];
@@ -64,7 +68,7 @@ export class BookingsTableComponent {
     // combineLatest: when token/filter/page changes, emit the latest values together.
     // On subscribe, it waits for each source to emit once, then emits immediately; later it emits on any change.
     // Here token$/filter$/page$ emit their current values right away, so combineLatest fires once immediately.
-    combineLatest([token$, filter$, page$])
+    combineLatest([token$, filter$, page$, refresh$])
       // pipe: chains RxJS operators in order; each operator runs left-to-right and uses the previous result.
       // .pipe(...) returns a new Observable.
       .pipe(
@@ -133,14 +137,14 @@ export class BookingsTableComponent {
     return formatRoomLabel(roomTypeId, roomNumber);
   }
 
-  onDelete(booking: AdminBooking, details: HTMLDetailsElement | null): void {
-    // Placeholder for future delete action; keep UI behaviour consistent.
-    // eslint-disable-next-line no-console
-    console.log('delete booking id:', booking.id ?? '-');
-    if (details) {
-      details.removeAttribute('open');
+  onBookingDeleted(): void {
+    if (this.bookings.length === 1 && this.page() > 1) {
+      this.page.update((value) => Math.max(1, value - 1));
+      return;
     }
+    this.refresh.update((value) => value + 1);
   }
+
 
   private getNzToday(): string {
     const formatter = new Intl.DateTimeFormat('en-US', {
